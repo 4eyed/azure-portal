@@ -26,20 +26,26 @@ openfga run \
     --log-format json > /var/log/openfga.log 2>&1 &
 OPENFGA_PID=$!
 
-# Wait for OpenFGA to be ready
-echo "Waiting for OpenFGA to be ready..."
-for i in {1..30}; do
+# Wait for OpenFGA to be ready (up to 3 minutes for SQL migrations)
+echo "Waiting for OpenFGA to be ready (this may take up to 3 minutes for SQL migrations)..."
+OPENFGA_TIMEOUT=180  # 3 minutes
+OPENFGA_INTERVAL=5   # Check every 5 seconds
+ELAPSED=0
+
+while [ $ELAPSED -lt $OPENFGA_TIMEOUT ]; do
     if curl -s http://localhost:8080/healthz > /dev/null 2>&1; then
-        echo "OpenFGA is ready!"
+        echo "✅ OpenFGA is ready! (took ${ELAPSED}s)"
         break
     fi
-    echo "Waiting for OpenFGA... ($i/30)"
-    sleep 2
+    echo "⏳ Waiting for OpenFGA... (${ELAPSED}s / ${OPENFGA_TIMEOUT}s)"
+    sleep $OPENFGA_INTERVAL
+    ELAPSED=$((ELAPSED + OPENFGA_INTERVAL))
 done
 
 # Check if OpenFGA started successfully
 if ! curl -s http://localhost:8080/healthz > /dev/null 2>&1; then
-    echo "ERROR: OpenFGA failed to start"
+    echo "❌ ERROR: OpenFGA failed to start after ${OPENFGA_TIMEOUT}s"
+    echo "OpenFGA logs:"
     cat /var/log/openfga.log
     exit 1
 fi
