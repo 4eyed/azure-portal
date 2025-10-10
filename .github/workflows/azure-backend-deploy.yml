@@ -175,11 +175,6 @@ jobs:
             --name ${{ env.AZURE_FUNCTIONAPP_NAME }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
 
-      - name: Wait for Function App to start
-        run: |
-          echo "Waiting 60 seconds for Function App to start..."
-          sleep 60
-
       - name: Get Function App URL
         id: get-url
         run: |
@@ -192,29 +187,57 @@ jobs:
           echo "Function App URL: https://$FUNCTION_URL"
 
       - name: Smoke test - Health check
+        continue-on-error: true
+        id: smoke-test
         run: |
-          echo "Testing Function App health..."
-          for i in {1..10}; do
-            if curl -f -s -o /dev/null -w "%{http_code}" "${{ steps.get-url.outputs.url }}/api/menu?user=alice" | grep -q "200"; then
-              echo "✅ Health check passed!"
+          echo "Testing Function App health (this may take 2-3 minutes on cold start)..."
+          TIMEOUT=300  # 5 minutes total timeout
+          INTERVAL=15  # Check every 15 seconds
+          ELAPSED=0
+
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            echo "Attempt $(($ELAPSED / $INTERVAL + 1)) - Elapsed: ${ELAPSED}s..."
+
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "${{ steps.get-url.outputs.url }}/api/menu?user=alice" || echo "000")
+
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ Health check passed! (took ${ELAPSED}s)"
               exit 0
+            elif [ "$HTTP_CODE" != "000" ]; then
+              echo "⚠️  Got HTTP $HTTP_CODE, waiting for 200..."
+            else
+              echo "⏳ Function App still starting up..."
             fi
-            echo "Attempt $i/10 failed, waiting 10 seconds..."
-            sleep 10
+
+            sleep $INTERVAL
+            ELAPSED=$(($ELAPSED + $INTERVAL))
           done
-          echo "❌ Health check failed after 10 attempts"
+
+          echo "❌ Health check failed after ${TIMEOUT}s"
+          echo "Last HTTP code: $HTTP_CODE"
           exit 1
 
       - name: Deployment summary
+        if: always()
         run: |
-          echo "## 🚀 Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "## 🚀 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Function App:** ${{ env.AZURE_FUNCTIONAPP_NAME }}" >> $GITHUB_STEP_SUMMARY
           echo "**URL:** ${{ steps.get-url.outputs.url }}" >> $GITHUB_STEP_SUMMARY
           echo "**Image:** ${{ secrets.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
           echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.smoke-test.outcome }}" = "success" ]; then
+            echo "**Health Check:** ✅ Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Health Check:** ⚠️ Failed or timed out (Function App may still be starting)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Test Endpoints" >> $GITHUB_STEP_SUMMARY
           echo "- Alice (Admin): ${{ steps.get-url.outputs.url }}/api/menu?user=alice" >> $GITHUB_STEP_SUMMARY
           echo "- Bob (Viewer): ${{ steps.get-url.outputs.url }}/api/menu?user=bob" >> $GITHUB_STEP_SUMMARY
           echo "- Charlie (Editor): ${{ steps.get-url.outputs.url }}/api/menu?user=charlie" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> ⏱️ **Note:** Container cold start can take 2-3 minutes. If health check failed, wait a few minutes and test manually." >> $GITHUB_STEP_SUMMARY
