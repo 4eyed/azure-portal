@@ -1,0 +1,81 @@
+openfga/
+│
+├── 📚 Documentation
+│   ├── README.md                     # Project overview
+│   ├── QUICKSTART.md                 # Quick start guide
+│   ├── AZURE-DEPLOYMENT.md           # Azure deployment guide
+│   ├── PROJECT-SUMMARY.md            # Detailed summary
+│   └── STRUCTURE.txt                 # This file
+│
+├── 🎨 Frontend (Simple Web UI)
+│   └── frontend/
+│       └── index.html                # Single-page application
+│
+├── ⚙️  Backend (C# Azure Functions)
+│   └── backend/MenuApi/
+│       ├── MenuApi.csproj            # .NET project file
+│       ├── Program.cs                # App startup & DI
+│       ├── MenuFunction.cs           # API endpoints
+│       ├── Dockerfile                # Container image
+│       ├── host.json                 # Function config
+│       └── local.settings.json       # Local env vars
+│
+├── 🔐 Authorization (OpenFGA)
+│   └── openfga-config/
+│       ├── model.json                # Auth model schema
+│       └── seed-data.json            # Test users & permissions
+│
+├── 🛠️  Scripts & Tools
+│   ├── scripts/
+│   │   └── setup-openfga.sh          # Setup script
+│   ├── Makefile                      # Convenience commands
+│   ├── docker-compose.yml            # Docker orchestration
+│   └── .gitignore                    # Git ignore rules
+│
+└── 📦 Generated (not in repo)
+    ├── .env                          # OpenFGA store ID
+    └── backend/MenuApi/bin/          # Build artifacts
+        └── backend/MenuApi/obj/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 Quick Commands:
+
+    make quickstart     # Start everything (first time)
+    make start          # Start services
+    make setup          # Setup OpenFGA
+    make open           # Open frontend
+    make test           # Test API
+    make logs           # View logs
+    make stop           # Stop services
+    make clean          # Clean everything
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🏗️  Architecture:
+
+    ┌─────────────────────┐
+    │   Web Browser       │
+    │   (frontend)        │
+    │   localhost         │
+    └──────────┬──────────┘
+               │
+               │ HTTP
+               ▼
+    ┌─────────────────────┐      ┌──────────────────────┐
+    │  Azure Functions    │      │     OpenFGA          │
+    │  C# API             │◄────►│  Authorization       │
+    │  localhost:7071     │      │  localhost:8080      │
+    └─────────────────────┘      └──────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 Permission Matrix:
+
+    User     │ Role   │ Dashboard │ Users │ Settings │ Reports
+    ─────────┼────────┼───────────┼───────┼──────────┼─────────
+    Alice    │ Admin  │     ✓     │   ✓   │    ✓     │    ✓
+    Charlie  │ Editor │     ✓     │   ✗   │    ✗     │    ✓
+    Bob      │ Viewer │     ✓     │   ✗   │    ✗     │    ✗
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

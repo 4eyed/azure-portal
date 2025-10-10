@@ -1,0 +1,110 @@
+.PHONY: help build run start stop logs test clean rebuild open
+
+IMAGE_NAME = menu-app-combined
+CONTAINER_NAME = menu-app
+CONFIG_DIR = $(shell pwd)/openfga-config
+
+help:
+	@echo "Podman commands for menu-app:"
+	@echo ""
+	@echo "  make build     - Build the container image"
+	@echo "  make run       - Run the container"
+	@echo "  make start     - Build and run (quickstart)"
+	@echo "  make stop      - Stop the container"
+	@echo "  make logs      - View container logs"
+	@echo "  make test      - Test API endpoints"
+	@echo "  make rebuild   - Rebuild and restart"
+	@echo "  make clean     - Stop and remove container"
+	@echo "  make open      - Open frontend in browser"
+
+build:
+	@echo "Building container image with Podman..."
+	podman build -f backend/MenuApi/Dockerfile.combined -t $(IMAGE_NAME) backend/MenuApi
+	@echo "✓ Image built: $(IMAGE_NAME)"
+
+run:
+	@echo "Starting container with Podman..."
+	podman run -d \
+		--name $(CONTAINER_NAME) \
+		-p 7071:80 \
+		-p 8080:8080 \
+		-v $(CONFIG_DIR):/openfga-config:ro \
+		$(IMAGE_NAME)
+	@echo "✓ Container started: $(CONTAINER_NAME)"
+	@echo ""
+	@echo "Waiting for services to start..."
+	@sleep 15
+	@echo ""
+	@echo "Services ready!"
+	@echo "  - API: http://localhost:7071/api/menu"
+	@echo "  - OpenFGA: http://localhost:8080/healthz"
+	@echo ""
+	@echo "Run 'make logs' to view logs"
+	@echo "Run 'make test' to test endpoints"
+	@echo "Run 'make open' to open frontend"
+
+start: build run
+
+stop:
+	@echo "Stopping container..."
+	podman stop $(CONTAINER_NAME) 2>/dev/null || true
+	@echo "✓ Container stopped"
+
+logs:
+	podman logs -f $(CONTAINER_NAME)
+
+test:
+	@echo "Testing API endpoints..."
+	@echo ""
+	@echo "1. Testing Alice (Admin):"
+	@curl -s "http://localhost:7071/api/menu?user=alice" | python3 -m json.tool || echo "API not ready yet"
+	@echo ""
+	@echo "2. Testing Bob (Viewer):"
+	@curl -s "http://localhost:7071/api/menu?user=bob" | python3 -m json.tool || echo "API not ready yet"
+	@echo ""
+	@echo "3. Testing Charlie (Editor):"
+	@curl -s "http://localhost:7071/api/menu?user=charlie" | python3 -m json.tool || echo "API not ready yet"
+	@echo ""
+	@echo "4. Testing OpenFGA:"
+	@curl -s http://localhost:8080/healthz && echo " ✓ OpenFGA is healthy" || echo "✗ OpenFGA not responding"
+
+rebuild:
+	@echo "Rebuilding container..."
+	@make -f Makefile.podman stop
+	@podman rm $(CONTAINER_NAME) 2>/dev/null || true
+	@make -f Makefile.podman build
+	@make -f Makefile.podman run
+	@echo "✓ Container rebuilt and started"
+
+clean:
+	@echo "Cleaning up..."
+	@podman stop $(CONTAINER_NAME) 2>/dev/null || true
+	@podman rm $(CONTAINER_NAME) 2>/dev/null || true
+	@echo "✓ Container removed"
+
+clean-all: clean
+	@echo "Removing image..."
+	@podman rmi $(IMAGE_NAME) 2>/dev/null || true
+	@echo "✓ Image removed"
+
+open:
+	@echo "Opening frontend..."
+	@open frontend/index.html || echo "Please open frontend/index.html in your browser"
+
+# Utility commands
+ps:
+	@podman ps -a | grep $(CONTAINER_NAME) || echo "Container not found"
+
+images:
+	@podman images | grep $(IMAGE_NAME) || echo "Image not found"
+
+shell:
+	@echo "Opening shell in container..."
+	@podman exec -it $(CONTAINER_NAME) /bin/bash
+
+health:
+	@echo "Checking health..."
+	@echo -n "OpenFGA: "
+	@podman exec $(CONTAINER_NAME) curl -s localhost:8080/healthz > /dev/null && echo "✓ Healthy" || echo "✗ Not responding"
+	@echo -n "API: "
+	@curl -s "http://localhost:7071/api/menu?user=alice" > /dev/null && echo "✓ Healthy" || echo "✗ Not responding"

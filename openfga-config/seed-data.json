@@ -1,0 +1,54 @@
+{
+  "tuples": [
+    {
+      "user": "user:alice",
+      "relation": "assignee",
+      "object": "role:admin"
+    },
+    {
+      "user": "user:bob",
+      "relation": "assignee",
+      "object": "role:viewer"
+    },
+    {
+      "user": "user:charlie",
+      "relation": "assignee",
+      "object": "role:editor"
+    },
+    {
+      "user": "role:admin",
+      "relation": "viewer_role",
+      "object": "menu_item:dashboard"
+    },
+    {
+      "user": "role:admin",
+      "relation": "viewer_role",
+      "object": "menu_item:users"
+    },
+    {
+      "user": "role:admin",
+      "relation": "viewer_role",
+      "object": "menu_item:settings"
+    },
+    {
+      "user": "role:admin",
+      "relation": "viewer_role",
+      "object": "menu_item:reports"
+    },
+    {
+      "user": "role:editor",
+      "relation": "viewer_role",
+      "object": "menu_item:dashboard"
+    },
+    {
+      "user": "role:editor",
+      "relation": "viewer_role",
+      "object": "menu_item:reports"
+    },
+    {
+      "user": "role:viewer",
+      "relation": "viewer_role",
+      "object": "menu_item:dashboard"
+    }
+  ]
+}

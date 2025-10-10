@@ -1,0 +1,29 @@
+# Azure Functions
+bin/
+obj/
+.vscode/
+local.settings.json
+__blobstorage__
+__queues__
+__azurite_db*__.json
+
+# Dependencies
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+*.swp
+*.swo
+*~
+.idea/
+
+# OpenFGA data
+openfga-data/
+
+# Secrets and credentials
+.env.azure-sql
+.env
+*.env

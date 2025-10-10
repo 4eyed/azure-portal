@@ -1,0 +1,64 @@
+# Multi-stage Dockerfile that combines OpenFGA (Go) and .NET Azure Functions
+# This creates a single container that runs both services with SQL Server support
+# Build from project root: podman build --platform=linux/amd64 -f Dockerfile.combined -t menu-app-combined .
+
+# Stage 1: Build custom OpenFGA with SQL Server support
+FROM --platform=linux/amd64 golang:1.23-alpine AS openfga-builder
+WORKDIR /build
+
+# Install build dependencies
+RUN apk add --no-cache git
+
+# Copy OpenFGA fork source code
+COPY openfga-fork/ .
+
+# Build custom OpenFGA binary with SQL Server support
+RUN go build -o openfga ./cmd/openfga
+
+# Stage 2: Build .NET application
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS dotnet-build
+WORKDIR /src
+
+COPY backend/MenuApi/MenuApi.csproj .
+RUN dotnet restore
+
+COPY backend/MenuApi/ .
+RUN dotnet build -c Release -o /app/build
+RUN dotnet publish -c Release -o /app/publish
+
+# Stage 3: Final image with both OpenFGA and .NET Functions
+FROM --platform=linux/amd64 mcr.microsoft.com/azure-functions/dotnet-isolated:4-dotnet-isolated8.0
+
+# Install jq for JSON parsing
+RUN apt-get update && \
+    apt-get install -y jq && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy custom OpenFGA binary from builder stage
+COPY --from=openfga-builder /build/openfga /usr/local/bin/openfga
+RUN chmod +x /usr/local/bin/openfga
+
+# Copy .NET application
+WORKDIR /home/site/wwwroot
+COPY --from=dotnet-build /app/publish .
+
+# Copy OpenFGA configuration
+COPY openfga-config /openfga-config
+
+# Copy startup script
+COPY backend/MenuApi/start.sh /start.sh
+RUN chmod +x /start.sh
+
+# Environment variables
+ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
+    AzureFunctionsJobHost__Logging__Console__IsEnabled=true \
+    OPENFGA_API_URL=http://localhost:8080 \
+    OPENFGA_DATASTORE_ENGINE=sqlserver \
+    OPENFGA_LOG_FORMAT=json
+
+# Expose ports
+EXPOSE 80 8080
+
+# Use custom startup script to run both OpenFGA and Functions
+ENTRYPOINT ["/start.sh"]

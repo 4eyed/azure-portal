@@ -1,0 +1,12 @@
+bin
+.idea
+.vscode
+dist/
+
+openfga
+!openfga/
+
+coverage*.out
+*.swp
+
+mise.toml

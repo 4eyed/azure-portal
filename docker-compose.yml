@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  openfga:
+    image: openfga/openfga:latest
+    container_name: openfga
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+      - "3000:3000"
+    command: run
+    environment:
+      - OPENFGA_DATASTORE_ENGINE=memory
+      - OPENFGA_LOG_FORMAT=json
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./backend/MenuApi
+      dockerfile: Dockerfile
+    container_name: menu-api
+    ports:
+      - "7071:80"
+    environment:
+      - OPENFGA_API_URL=http://openfga:8080
+      - OPENFGA_STORE_ID=${OPENFGA_STORE_ID:-}
+      - FUNCTIONS_WORKER_RUNTIME=dotnet-isolated
+    depends_on:
+      openfga:
+        condition: service_healthy
+    volumes:
+      - ./backend/MenuApi:/src
