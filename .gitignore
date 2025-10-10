@@ -23,6 +23,10 @@ Thumbs.db
 # OpenFGA data
 openfga-data/
 
+# OpenFGA fork - ignore source code, track only the binary
+openfga-fork/*
+!openfga-fork/openfga
+
 # Secrets and credentials
 .env.azure-sql
 .env
