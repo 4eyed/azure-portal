@@ -30,7 +30,7 @@ jobs:
           # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
           app_location: "/frontend" # App source code path
           api_location: "" # No API - using separate Azure Functions deployment
-          output_location: "." # Built app content directory - optional
+          output_location: "dist" # Vite builds to dist/ directory
           ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
