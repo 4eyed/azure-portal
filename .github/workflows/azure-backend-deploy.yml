@@ -1,0 +1,217 @@
+name: Azure Backend Deploy (Functions + OpenFGA)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - 'openfga-fork/**'
+      - 'openfga-config/**'
+      - 'Dockerfile.combined'
+      - '.github/workflows/azure-backend-deploy.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  AZURE_FUNCTIONAPP_NAME: ${{ secrets.AZURE_FUNCTIONAPP_NAME }}
+  AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+  ACR_NAME: ${{ secrets.ACR_NAME }}
+  IMAGE_NAME: menu-app-combined
+  GO_VERSION: '1.24.x'
+  DOTNET_VERSION: '8.0.x'
+
+jobs:
+  build-openfga:
+    name: Build OpenFGA Binary
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: openfga-fork/go.sum
+
+      - name: Cache OpenFGA binary
+        id: cache-openfga
+        uses: actions/cache@v4
+        with:
+          path: openfga-fork/openfga
+          key: openfga-binary-${{ hashFiles('openfga-fork/**/*.go', 'openfga-fork/go.mod', 'openfga-fork/go.sum') }}
+          restore-keys: |
+            openfga-binary-
+
+      - name: Build OpenFGA with SQL Server support
+        if: steps.cache-openfga.outputs.cache-hit != 'true'
+        working-directory: openfga-fork
+        run: |
+          echo "Building OpenFGA binary with SQL Server support..."
+          go mod download
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+            -v \
+            -o openfga \
+            -ldflags="-s -w" \
+            ./cmd/openfga
+          chmod +x openfga
+          ls -lh openfga
+
+      - name: Verify binary
+        working-directory: openfga-fork
+        run: |
+          file openfga
+          ./openfga version || echo "Binary built successfully"
+
+      - name: Upload OpenFGA binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openfga-binary
+          path: openfga-fork/openfga
+          retention-days: 1
+
+  build-and-deploy:
+    name: Build Container & Deploy
+    runs-on: ubuntu-latest
+    needs: build-openfga
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download OpenFGA binary
+        uses: actions/download-artifact@v4
+        with:
+          name: openfga-binary
+          path: openfga-fork/
+
+      - name: Make binary executable
+        run: chmod +x openfga-fork/openfga
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to Azure Container Registry
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ secrets.ACR_NAME }}.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix={{branch}}-
+            type=ref,event=branch
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.combined
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ secrets.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
+            ${{ secrets.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=registry,ref=${{ secrets.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ secrets.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:buildcache,mode=max
+          build-args: |
+            BUILDTIME=${{ github.event.head_commit.timestamp }}
+            VERSION=${{ github.sha }}
+
+      - name: Update Azure Function App with new container
+        run: |
+          az functionapp config container set \
+            --name ${{ env.AZURE_FUNCTIONAPP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --docker-custom-image-name ${{ secrets.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest \
+            --docker-registry-server-url https://${{ secrets.ACR_NAME }}.azurecr.io \
+            --docker-registry-server-user ${{ secrets.ACR_USERNAME }} \
+            --docker-registry-server-password ${{ secrets.ACR_PASSWORD }}
+
+      - name: Configure Function App settings
+        run: |
+          az functionapp config appsettings set \
+            --name ${{ env.AZURE_FUNCTIONAPP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --settings \
+              "WEBSITES_ENABLE_APP_SERVICE_STORAGE=false" \
+              "WEBSITES_PORT=80" \
+              "OPENFGA_API_URL=http://localhost:8080" \
+              "OPENFGA_DATASTORE_ENGINE=sqlserver" \
+              "OPENFGA_DATASTORE_URI=${{ secrets.SQL_CONNECTION_STRING }}" \
+              "OPENFGA_LOG_FORMAT=json" \
+              "DEPLOYMENT_SHA=${{ github.sha }}" \
+              "DEPLOYMENT_TIME=${{ github.event.head_commit.timestamp }}"
+
+      - name: Restart Function App
+        run: |
+          az functionapp restart \
+            --name ${{ env.AZURE_FUNCTIONAPP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
+
+      - name: Wait for Function App to start
+        run: |
+          echo "Waiting 60 seconds for Function App to start..."
+          sleep 60
+
+      - name: Get Function App URL
+        id: get-url
+        run: |
+          FUNCTION_URL=$(az functionapp show \
+            --name ${{ env.AZURE_FUNCTIONAPP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query defaultHostName \
+            -o tsv)
+          echo "url=https://$FUNCTION_URL" >> $GITHUB_OUTPUT
+          echo "Function App URL: https://$FUNCTION_URL"
+
+      - name: Smoke test - Health check
+        run: |
+          echo "Testing Function App health..."
+          for i in {1..10}; do
+            if curl -f -s -o /dev/null -w "%{http_code}" "${{ steps.get-url.outputs.url }}/api/menu?user=alice" | grep -q "200"; then
+              echo "✅ Health check passed!"
+              exit 0
+            fi
+            echo "Attempt $i/10 failed, waiting 10 seconds..."
+            sleep 10
+          done
+          echo "❌ Health check failed after 10 attempts"
+          exit 1
+
+      - name: Deployment summary
+        run: |
+          echo "## 🚀 Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Function App:** ${{ env.AZURE_FUNCTIONAPP_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** ${{ steps.get-url.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** ${{ secrets.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Endpoints" >> $GITHUB_STEP_SUMMARY
+          echo "- Alice (Admin): ${{ steps.get-url.outputs.url }}/api/menu?user=alice" >> $GITHUB_STEP_SUMMARY
+          echo "- Bob (Viewer): ${{ steps.get-url.outputs.url }}/api/menu?user=bob" >> $GITHUB_STEP_SUMMARY
+          echo "- Charlie (Editor): ${{ steps.get-url.outputs.url }}/api/menu?user=charlie" >> $GITHUB_STEP_SUMMARY
