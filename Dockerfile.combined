@@ -2,18 +2,12 @@
 # This creates a single container that runs both services with SQL Server support
 # Build from project root: podman build --platform=linux/amd64 -f Dockerfile.combined -t menu-app-combined .
 
-# Stage 1: Build custom OpenFGA with SQL Server support
-FROM --platform=linux/amd64 golang:1.23-alpine AS openfga-builder
+# Stage 1: Use pre-built OpenFGA binary (already compiled locally)
+FROM --platform=linux/amd64 alpine:latest AS openfga-builder
 WORKDIR /build
 
-# Install build dependencies
-RUN apk add --no-cache git
-
-# Copy OpenFGA fork source code
-COPY openfga-fork/ .
-
-# Build custom OpenFGA binary with SQL Server support
-RUN go build -o openfga ./cmd/openfga
+# Copy pre-built OpenFGA binary with SQL Server support
+COPY openfga-fork/openfga /build/openfga
 
 # Stage 2: Build .NET application
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS dotnet-build
