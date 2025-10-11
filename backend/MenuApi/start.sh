@@ -1,12 +1,27 @@
 #!/bin/bash
 set -e
 
-echo "Starting OpenFGA with SQL Server and Azure Functions..."
+echo "=============================================="
+echo "Container Startup - $(date)"
+echo "=============================================="
+echo ""
+
+echo "📋 Environment Variables:"
+echo "  OPENFGA_API_URL: ${OPENFGA_API_URL:-not set}"
+echo "  OPENFGA_STORE_ID: ${OPENFGA_STORE_ID:-not set}"
+echo "  OPENFGA_DATASTORE_ENGINE: ${OPENFGA_DATASTORE_ENGINE:-not set}"
+echo "  OPENFGA_DATASTORE_URI: ${OPENFGA_DATASTORE_URI:0:50}... (truncated)"
+echo "  WEBSITES_PORT: ${WEBSITES_PORT:-not set}"
+echo ""
 
 # Validate required environment variables
 if [ -z "$OPENFGA_DATASTORE_URI" ]; then
-    echo "ERROR: OPENFGA_DATASTORE_URI environment variable is required"
+    echo "❌ ERROR: OPENFGA_DATASTORE_URI environment variable is required"
     exit 1
+fi
+
+if [ -z "$OPENFGA_STORE_ID" ]; then
+    echo "⚠️  WARNING: OPENFGA_STORE_ID not set! Will try to create/find store dynamically."
 fi
 
 # Run database migrations
@@ -106,9 +121,24 @@ shutdown() {
 
 trap shutdown SIGTERM SIGINT
 
-# Start Azure Functions host in the foreground
-echo "Starting Azure Functions host with OPENFGA_STORE_ID=$OPENFGA_STORE_ID..."
+# Final environment check before starting Functions
+echo ""
+echo "=============================================="
+echo "Starting Azure Functions Host"
+echo "=============================================="
+echo "  OPENFGA_API_URL: $OPENFGA_API_URL"
+echo "  OPENFGA_STORE_ID: $OPENFGA_STORE_ID"
+echo "  Current directory: $(pwd)"
+echo "  OpenFGA PID: $OPENFGA_PID"
+echo ""
+
 cd /home/site/wwwroot
 
+# List files to verify deployment
+echo "📁 Function files:"
+ls -la *.dll 2>/dev/null | head -5 || echo "No DLL files found"
+echo ""
+
 # Start the Functions host with environment properly set
+echo "🚀 Executing Azure Functions host..."
 exec /azure-functions-host/Microsoft.Azure.WebJobs.Script.WebHost

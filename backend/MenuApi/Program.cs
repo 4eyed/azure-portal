@@ -20,10 +20,26 @@ var host = new HostBuilder()
         // Register OpenFGA client
         services.AddSingleton<OpenFgaClient>(sp =>
         {
+            var apiUrl = Environment.GetEnvironmentVariable("OPENFGA_API_URL") ?? "http://localhost:8080";
+            var storeId = Environment.GetEnvironmentVariable("OPENFGA_STORE_ID") ?? "";
+
+            Console.WriteLine("============================================");
+            Console.WriteLine("OpenFGA Client Configuration");
+            Console.WriteLine("============================================");
+            Console.WriteLine($"API URL: {apiUrl}");
+            Console.WriteLine($"Store ID: {(string.IsNullOrEmpty(storeId) ? "NOT SET!" : storeId)}");
+            Console.WriteLine("============================================");
+
+            if (string.IsNullOrEmpty(storeId))
+            {
+                Console.WriteLine("⚠️  WARNING: OPENFGA_STORE_ID is not set!");
+                Console.WriteLine("   OpenFGA SDK may not work correctly.");
+            }
+
             var configuration = new ClientConfiguration
             {
-                ApiUrl = Environment.GetEnvironmentVariable("OPENFGA_API_URL") ?? "http://localhost:8080",
-                StoreId = Environment.GetEnvironmentVariable("OPENFGA_STORE_ID") ?? ""
+                ApiUrl = apiUrl,
+                StoreId = storeId
             };
             return new OpenFgaClient(configuration);
         });

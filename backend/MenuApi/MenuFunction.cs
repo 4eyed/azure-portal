@@ -27,10 +27,14 @@ public class MenuFunction
     public async Task<HttpResponseData> GetMenu(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "menu")] HttpRequestData req)
     {
-        _logger.LogInformation("GetMenu function processing request");
+        try
+        {
+            _logger.LogInformation("=== GetMenu function started ===");
+            _logger.LogInformation($"OpenFGA Client configured: StoreId={_fgaClient.StoreId}, ApiUrl={_fgaClient.GetConfiguration().ApiUrl}");
 
-        // Get user from query parameter (in production, use proper authentication)
-        var userId = req.Query["user"] ?? "alice";
+            // Get user from query parameter (in production, use proper authentication)
+            var userId = req.Query["user"] ?? "alice";
+            _logger.LogInformation($"Processing request for user: {userId}");
 
         // Fetch menu items from database if available, otherwise use default
         var menuItems = _dbContext != null
@@ -43,50 +47,81 @@ public class MenuFunction
                 new() { Id = 4, Name = "Reports", Icon = "📈", Url = "/reports" }
             };
 
-        var accessibleItems = new List<object>();
+            _logger.LogInformation($"Found {menuItems.Count} menu items to check");
 
-        foreach (var item in menuItems)
-        {
-            try
+            var accessibleItems = new List<object>();
+
+            foreach (var item in menuItems)
             {
-                var checkRequest = new ClientCheckRequest
+                try
                 {
-                    User = $"user:{userId}",
-                    Relation = "viewer",
-                    Object = $"menu_item:{item.Name.ToLower()}"
-                };
+                    _logger.LogInformation($"Checking access for item: {item.Name}");
 
-                var response = await _fgaClient.Check(checkRequest);
-
-                if (response.Allowed == true)
-                {
-                    accessibleItems.Add(new
+                    var checkRequest = new ClientCheckRequest
                     {
-                        Id = item.Id,
-                        Name = item.Name,
-                        Icon = item.Icon,
-                        Url = item.Url,
-                        Description = item.Description
-                    });
+                        User = $"user:{userId}",
+                        Relation = "viewer",
+                        Object = $"menu_item:{item.Name.ToLower()}"
+                    };
+
+                    _logger.LogInformation($"Making OpenFGA Check request: User={checkRequest.User}, Relation={checkRequest.Relation}, Object={checkRequest.Object}");
+
+                    var response = await _fgaClient.Check(checkRequest);
+
+                    _logger.LogInformation($"OpenFGA Check response for {item.Name}: Allowed={response.Allowed}");
+
+                    if (response.Allowed == true)
+                    {
+                        accessibleItems.Add(new
+                        {
+                            Id = item.Id,
+                            Name = item.Name,
+                            Icon = item.Icon,
+                            Url = item.Url,
+                            Description = item.Description
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"❌ Error checking access for menu item {item.Id} ({item.Name}): {ex.Message}");
+                    _logger.LogError($"Stack trace: {ex.StackTrace}");
                 }
             }
-            catch (Exception ex)
+
+            _logger.LogInformation($"Returning {accessibleItems.Count} accessible items for user {userId}");
+
+            var httpResponse = req.CreateResponse(HttpStatusCode.OK);
+            httpResponse.Headers.Add("Content-Type", "application/json");
+            httpResponse.Headers.Add("Access-Control-Allow-Origin", "*");
+
+            await httpResponse.WriteStringAsync(JsonSerializer.Serialize(new
             {
-                _logger.LogError(ex, $"Error checking access for menu item {item.Id}");
-            }
+                user = userId,
+                menuItems = accessibleItems
+            }));
+
+            _logger.LogInformation("=== GetMenu function completed successfully ===");
+            return httpResponse;
         }
-
-        var httpResponse = req.CreateResponse(HttpStatusCode.OK);
-        httpResponse.Headers.Add("Content-Type", "application/json");
-        httpResponse.Headers.Add("Access-Control-Allow-Origin", "*");
-
-        await httpResponse.WriteStringAsync(JsonSerializer.Serialize(new
+        catch (Exception ex)
         {
-            user = userId,
-            menuItems = accessibleItems
-        }));
+            _logger.LogError(ex, $"❌ FATAL ERROR in GetMenu: {ex.Message}");
+            _logger.LogError($"Stack trace: {ex.StackTrace}");
 
-        return httpResponse;
+            var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+            errorResponse.Headers.Add("Content-Type", "application/json");
+            errorResponse.Headers.Add("Access-Control-Allow-Origin", "*");
+
+            await errorResponse.WriteStringAsync(JsonSerializer.Serialize(new
+            {
+                error = "Internal server error",
+                message = ex.Message,
+                details = ex.ToString()
+            }));
+
+            return errorResponse;
+        }
     }
 
     [Function("GetMenuItem")]
