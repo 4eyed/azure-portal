@@ -88,13 +88,24 @@ if [ -f /openfga-config/model.json ]; then
     # Export for the Functions app
     export OPENFGA_STORE_ID=$STORE_ID
 
-    # Upload model
+    # Upload model and check response
     echo "Uploading authorization model..."
-    curl -s -X POST "http://localhost:8080/stores/$STORE_ID/authorization-models" \
+    MODEL_RESPONSE=$(curl -s -X POST "http://localhost:8080/stores/$STORE_ID/authorization-models" \
         -H "Content-Type: application/json" \
-        -d @/openfga-config/model.json > /dev/null
+        -d @/openfga-config/model.json)
 
-    echo "Authorization model uploaded"
+    echo "Model upload response: $MODEL_RESPONSE"
+
+    # Extract authorization model ID from response
+    AUTH_MODEL_ID=$(echo $MODEL_RESPONSE | jq -r '.authorization_model_id // empty')
+
+    if [ -z "$AUTH_MODEL_ID" ]; then
+        echo "❌ ERROR: Failed to upload authorization model"
+        echo "Response was: $MODEL_RESPONSE"
+        exit 1
+    fi
+
+    echo "✅ Authorization model uploaded successfully (ID: $AUTH_MODEL_ID)"
 
     # Load seed data if exists
     if [ -f /openfga-config/seed-data.json ]; then
@@ -103,10 +114,17 @@ if [ -f /openfga-config/model.json ]; then
 
         WRITE_RESPONSE=$(curl -s -X POST "http://localhost:8080/stores/$STORE_ID/write" \
             -H "Content-Type: application/json" \
-            -d "{\"writes\":{\"tuple_keys\":$TUPLES}}")
+            -d "{\"writes\":{\"tuple_keys\":$TUPLES},\"authorization_model_id\":\"$AUTH_MODEL_ID\"}")
 
         echo "Seed data response: $WRITE_RESPONSE"
-        echo "Seed data loaded successfully"
+
+        # Check if write was successful
+        if echo "$WRITE_RESPONSE" | jq -e '.code' > /dev/null 2>&1; then
+            echo "❌ ERROR: Failed to write seed data"
+            exit 1
+        fi
+
+        echo "✅ Seed data loaded successfully"
     fi
 else
     echo "No OpenFGA configuration found, skipping initialization"
