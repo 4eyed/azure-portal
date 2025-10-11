@@ -163,6 +163,7 @@ jobs:
               "WEBSITES_ENABLE_APP_SERVICE_STORAGE=false" \
               "WEBSITES_PORT=80" \
               "OPENFGA_API_URL=http://localhost:8080" \
+              "OPENFGA_STORE_ID=${{ secrets.OPENFGA_STORE_ID }}" \
               "OPENFGA_DATASTORE_ENGINE=sqlserver" \
               "OPENFGA_DATASTORE_URI=${{ secrets.SQL_CONNECTION_STRING }}" \
               "OPENFGA_LOG_FORMAT=json" \
