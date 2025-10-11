@@ -131,32 +131,56 @@ DEPLOYMENT_TIME=<timestamp>
 
 ## Local Development
 
+### Quick Start (Recommended)
+
+**One command to start everything:**
+
+```bash
+npm run dev
+```
+
+This starts:
+- OpenFGA server (port 8080)
+- Azure Functions API (port 7071)
+- React frontend (port 5173)
+
+**First time setup:**
+
+```bash
+# Install dependencies
+npm install
+cd frontend && npm install && cd ..
+
+# Start full stack
+npm run dev
+
+# Open browser
+open http://localhost:5173
+```
+
+See [QUICK-START.md](QUICK-START.md) for TL;DR or [LOCAL-DEV-GUIDE.md](LOCAL-DEV-GUIDE.md) for detailed documentation.
+
+### Individual Services
+
+```bash
+# Just frontend
+npm run frontend
+
+# Just backend (requires OpenFGA)
+npm run backend
+
+# Just OpenFGA
+npm run openfga
+
+# Stop everything
+npm run stop
+```
+
 ### Prerequisites
 - .NET 8 SDK
-- Go 1.24+ (to build OpenFGA)
+- Azure Functions Core Tools v4 (`npm install -g azure-functions-core-tools@4`)
 - Node.js 18+
-- Azure CLI
-- Docker (for container testing)
-
-### Frontend
-```bash
-cd frontend
-npm install
-npm run dev         # http://localhost:5173
-```
-
-### Backend (Local)
-```bash
-# Start OpenFGA (requires SQL Server)
-cd openfga-fork
-go run ./cmd/openfga run --datastore-engine sqlserver --datastore-uri "..."
-
-# Start Functions
-cd backend/MenuApi
-export OPENFGA_API_URL=http://localhost:8080
-export OPENFGA_STORE_ID=<your-store-id>
-func start
-```
+- OpenFGA binary (pre-built at `openfga-fork/openfga`)
 
 ### Container (Full Stack)
 ```bash
