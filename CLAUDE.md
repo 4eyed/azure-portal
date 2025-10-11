@@ -205,12 +205,18 @@ curl "https://func-menu-app-18436.azurewebsites.net/api/menu?user=bob"
 
 ## OpenFGA Custom Fork
 
-**Location**: [openfga-fork/](openfga-fork/) (submodule)
+**Location**: [openfga-fork/](openfga-fork/)
 
-**Modifications**:
-- Added SQL Server driver support
-- Azure SQL Database compatibility
-- Migration scripts for SQL Server
+**SQL Server Compatibility Fixes**:
+- **Row Constructor IN**: SQL Server doesn't support `(a,b,c) IN ((1,2,3))` syntax. Replaced with OR conditions in [write.go](openfga-fork/pkg/storage/sqlserver/write.go)
+- **VARBINARY Casting**: Fixed binary data storage with `CAST(@pN AS VARBINARY(MAX))` for authorization models and assertions
+- **Dialect-Aware SQL**: Added `NowExpr()` (SYSDATETIME vs NOW) and `LockSuffix()` (WITH UPDLOCK vs FOR UPDATE)
+- **MERGE Upserts**: Replaced MySQL's `ON DUPLICATE KEY UPDATE` with SQL Server `MERGE` statements
+
+**Key Files**:
+- [pkg/storage/sqlserver/write.go](openfga-fork/pkg/storage/sqlserver/write.go) - SQL Server-specific Write implementation
+- [pkg/storage/sqlserver/sqlserver.go](openfga-fork/pkg/storage/sqlserver/sqlserver.go) - WriteAssertions, WriteAuthorizationModel overrides
+- [pkg/storage/sqlcommon/sqlcommon.go](openfga-fork/pkg/storage/sqlcommon/sqlcommon.go) - Dialect-aware DBInfo methods
 
 **Build**:
 ```bash
