@@ -30,7 +30,7 @@ public class MenuFunction
         try
         {
             _logger.LogInformation("=== GetMenu function started ===");
-            _logger.LogInformation($"OpenFGA Client configured: StoreId={_fgaClient.StoreId}, ApiUrl={_fgaClient.GetConfiguration().ApiUrl}");
+            _logger.LogInformation($"OpenFGA Client StoreId: {_fgaClient.StoreId}");
 
             // Get user from query parameter (in production, use proper authentication)
             var userId = req.Query["user"] ?? "alice";
