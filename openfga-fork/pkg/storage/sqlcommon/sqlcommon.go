@@ -477,6 +477,7 @@ type DBInfo struct {
 	db             *sql.DB
 	stbl           sq.StatementBuilderType
 	HandleSQLError errorHandlerFn
+	dialect        string
 }
 
 type errorHandlerFn func(error, ...interface{}) error
@@ -491,6 +492,28 @@ func NewDBInfo(db *sql.DB, stbl sq.StatementBuilderType, errorHandler errorHandl
 		db:             db,
 		stbl:           stbl,
 		HandleSQLError: errorHandler,
+		dialect:        dialect,
+	}
+}
+
+// NowExpr returns the appropriate SQL expression for current timestamp based on database dialect.
+func (dbInfo *DBInfo) NowExpr() sq.Sqlizer {
+	switch dbInfo.dialect {
+	case "mssql", "sqlserver":
+		return sq.Expr("SYSDATETIME()")
+	default:
+		return sq.Expr("NOW()")
+	}
+}
+
+// LockSuffix returns the appropriate SQL suffix for row locking based on database dialect.
+func (dbInfo *DBInfo) LockSuffix() string {
+	switch dbInfo.dialect {
+	case "mssql", "sqlserver":
+		// SQL Server uses WITH (UPDLOCK, ROWLOCK) instead of FOR UPDATE
+		return "WITH (UPDLOCK, ROWLOCK)"
+	default:
+		return "FOR UPDATE"
 	}
 }
 
@@ -583,14 +606,26 @@ func buildRowConstructorIN(keys []tupleLockKey) (string, []interface{}) {
 func selectExistingRowsForWrite(ctx context.Context, dbInfo *DBInfo, store string, keys []tupleLockKey, txn *sql.Tx, existing map[string]*openfgav1.Tuple) error {
 	inExpr, args := buildRowConstructorIN(keys)
 
-	selectBuilder := dbInfo.stbl.
-		Select(SQLIteratorColumns()...).
-		From("tuple").
-		Where(sq.Eq{"store": store}).
-		// Row-constructor IN on full composite key for precise point locks.
-		Where(sq.Expr("(object_type, object_id, relation, _user, user_type) IN "+inExpr, args...)).
-		Suffix("FOR UPDATE").
-		RunWith(txn) // make sure to run in the same transaction
+	// SQL Server requires WITH hints immediately after table name, not as suffix
+	var selectBuilder sq.SelectBuilder
+	if dbInfo.dialect == "mssql" || dbInfo.dialect == "sqlserver" {
+		selectBuilder = dbInfo.stbl.
+			Select(SQLIteratorColumns()...).
+			From("tuple WITH (UPDLOCK, ROWLOCK)").
+			Where(sq.Eq{"store": store}).
+			// Row-constructor IN on full composite key for precise point locks.
+			Where(sq.Expr("(object_type, object_id, relation, _user, user_type) IN "+inExpr, args...)).
+			RunWith(txn) // make sure to run in the same transaction
+	} else {
+		selectBuilder = dbInfo.stbl.
+			Select(SQLIteratorColumns()...).
+			From("tuple").
+			Where(sq.Eq{"store": store}).
+			// Row-constructor IN on full composite key for precise point locks.
+			Where(sq.Expr("(object_type, object_id, relation, _user, user_type) IN "+inExpr, args...)).
+			Suffix("FOR UPDATE").
+			RunWith(txn) // make sure to run in the same transaction
+	}
 
 	iter := NewSQLTupleIterator(selectBuilder, dbInfo.HandleSQLError)
 	defer iter.Stop()
@@ -702,7 +737,7 @@ func Write(
 			nil, // Redact condition info for deletes since we only need the base triplet (object, relation, user).
 			openfgav1.TupleOperation_TUPLE_OPERATION_DELETE,
 			id,
-			sq.Expr("NOW()"),
+			dbInfo.NowExpr(),
 		})
 	}
 
@@ -758,7 +793,7 @@ func Write(
 			conditionName,
 			conditionContext,
 			id,
-			sq.Expr("NOW()"),
+			dbInfo.NowExpr(),
 		})
 
 		changeLogItems = append(changeLogItems, []interface{}{
@@ -771,7 +806,7 @@ func Write(
 			conditionContext,
 			openfgav1.TupleOperation_TUPLE_OPERATION_WRITE,
 			id,
-			sq.Expr("NOW()"),
+			dbInfo.NowExpr(),
 		})
 	}
 

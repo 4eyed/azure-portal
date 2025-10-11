@@ -226,7 +226,8 @@ func (s *Datastore) Write(
 	ctx, span := startTrace(ctx, "Write")
 	defer span.End()
 
-	return sqlcommon.Write(ctx, s.dbInfo, store, deletes, writes, storage.NewTupleWriteOptions(opts...), time.Now().UTC())
+	// SQL Server-specific write implementation to handle row constructor incompatibility
+	return s.write(ctx, store, deletes, writes, storage.NewTupleWriteOptions(opts...), time.Now().UTC())
 }
 
 // ReadUserTuple see [storage.RelationshipTupleReader].ReadUserTuple.
@@ -469,7 +470,35 @@ func (s *Datastore) WriteAuthorizationModel(ctx context.Context, store string, m
 	ctx, span := startTrace(ctx, "WriteAuthorizationModel")
 	defer span.End()
 
-	return sqlcommon.WriteAuthorizationModel(ctx, s.dbInfo, store, model)
+	schemaVersion := model.GetSchemaVersion()
+	typeDefinitions := model.GetTypeDefinitions()
+
+	if len(typeDefinitions) < 1 {
+		return nil
+	}
+
+	pbdata, err := proto.Marshal(model)
+	if err != nil {
+		return err
+	}
+
+	// SQL Server: Use CAST to explicitly convert binary data to VARBINARY
+	// The mssql driver doesn't automatically infer VARBINARY from []byte, causing "implicit conversion" errors
+	query := `INSERT INTO authorization_model (store, authorization_model_id, schema_version, type, type_definition, serialized_protobuf)
+	          VALUES (@p1, @p2, @p3, @p4, NULL, CAST(@p5 AS VARBINARY(MAX)))`
+
+	_, err = s.db.ExecContext(ctx, query,
+		store,                  // @p1
+		model.GetId(),          // @p2
+		schemaVersion,          // @p3
+		"",                     // @p4
+		pbdata)                 // @p5 (serialized_protobuf - will be CAST to VARBINARY)
+
+	if err != nil {
+		return s.dbInfo.HandleSQLError(err)
+	}
+
+	return nil
 }
 
 // CreateStore adds a new store to storage.
@@ -647,12 +676,21 @@ func (s *Datastore) WriteAssertions(ctx context.Context, store, modelID string, 
 		return err
 	}
 
-	_, err = s.stbl.
-		Insert("assertion").
-		Columns("store", "authorization_model_id", "assertions").
-		Values(store, modelID, marshalledAssertions).
-		Suffix("ON DUPLICATE KEY UPDATE assertions = ?", marshalledAssertions).
-		ExecContext(ctx)
+	// SQL Server: Use MERGE for upsert instead of MySQL's ON DUPLICATE KEY UPDATE
+	// MERGE is atomic and handles insert/update in a single operation
+	// WITH (HOLDLOCK) prevents race conditions on concurrent upserts
+	query := `
+		MERGE assertion WITH (HOLDLOCK) AS target
+		USING (SELECT @p1 AS store, @p2 AS authorization_model_id, CAST(@p3 AS VARBINARY(MAX)) AS assertions) AS source
+		ON (target.store = source.store AND target.authorization_model_id = source.authorization_model_id)
+		WHEN MATCHED THEN
+			UPDATE SET assertions = source.assertions
+		WHEN NOT MATCHED THEN
+			INSERT (store, authorization_model_id, assertions)
+			VALUES (source.store, source.authorization_model_id, source.assertions);
+	`
+
+	_, err = s.db.ExecContext(ctx, query, store, modelID, marshalledAssertions)
 	if err != nil {
 		return HandleSQLError(err)
 	}
