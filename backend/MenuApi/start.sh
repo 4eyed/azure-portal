@@ -65,6 +65,11 @@ if ! curl -s http://localhost:8080/healthz > /dev/null 2>&1; then
     exit 1
 fi
 
+# Show recent OpenFGA logs for debugging
+echo "📋 Recent OpenFGA startup logs:"
+tail -20 /var/log/openfga.log | head -10 || echo "No logs available"
+echo ""
+
 # Initialize OpenFGA if configuration exists
 if [ -f /openfga-config/model.json ]; then
     echo "Initializing OpenFGA with authorization model..."
@@ -88,43 +93,86 @@ if [ -f /openfga-config/model.json ]; then
     # Export for the Functions app
     export OPENFGA_STORE_ID=$STORE_ID
 
-    # Upload model and check response
-    echo "Uploading authorization model..."
-    MODEL_RESPONSE=$(curl -s -X POST "http://localhost:8080/stores/$STORE_ID/authorization-models" \
-        -H "Content-Type: application/json" \
-        -d @/openfga-config/model.json)
+    # Check if authorization models already exist for this store
+    echo "Checking for existing authorization models..."
+    EXISTING_MODELS=$(curl -s "http://localhost:8080/stores/$STORE_ID/authorization-models?page_size=1")
+    EXISTING_MODEL_ID=$(echo $EXISTING_MODELS | jq -r '.authorization_models[0]?.id // empty')
 
-    echo "Model upload response: $MODEL_RESPONSE"
+    if [ -n "$EXISTING_MODEL_ID" ] && [ "$EXISTING_MODEL_ID" != "null" ]; then
+        echo "Found existing authorization model: $EXISTING_MODEL_ID"
+        echo "⚠️  Using existing model instead of uploading new one"
+        AUTH_MODEL_ID=$EXISTING_MODEL_ID
+    else
+        # Upload model and check response
+        echo "Uploading new authorization model..."
+        echo "📤 Model payload preview:"
+        cat /openfga-config/model.json | jq -c '.' | head -c 200
+        echo "..."
 
-    # Extract authorization model ID from response
-    AUTH_MODEL_ID=$(echo $MODEL_RESPONSE | jq -r '.authorization_model_id // empty')
+        MODEL_RESPONSE=$(curl -s -X POST "http://localhost:8080/stores/$STORE_ID/authorization-models" \
+            -H "Content-Type: application/json" \
+            -d @/openfga-config/model.json)
 
-    if [ -z "$AUTH_MODEL_ID" ]; then
-        echo "❌ ERROR: Failed to upload authorization model"
-        echo "Response was: $MODEL_RESPONSE"
-        exit 1
+        echo "Model upload response: $MODEL_RESPONSE"
+
+        # Extract authorization model ID from response
+        AUTH_MODEL_ID=$(echo $MODEL_RESPONSE | jq -r '.authorization_model_id // empty')
+
+        if [ -z "$AUTH_MODEL_ID" ]; then
+            echo "⚠️  WARNING: Failed to upload authorization model"
+            echo "Response was: $MODEL_RESPONSE"
+            echo "Checking if model exists after failed upload..."
+
+            # Try to get existing models again in case it was actually created
+            RETRY_MODELS=$(curl -s "http://localhost:8080/stores/$STORE_ID/authorization-models?page_size=1")
+            AUTH_MODEL_ID=$(echo $RETRY_MODELS | jq -r '.authorization_models[0]?.id // empty')
+
+            if [ -n "$AUTH_MODEL_ID" ] && [ "$AUTH_MODEL_ID" != "null" ]; then
+                echo "✅ Found model after retry: $AUTH_MODEL_ID"
+            else
+                echo "⚠️  Continuing without authorization model - Functions may not work correctly"
+                echo "Manual intervention may be required to upload the model"
+            fi
+        else
+            echo "✅ Authorization model uploaded successfully (ID: $AUTH_MODEL_ID)"
+        fi
     fi
 
-    echo "✅ Authorization model uploaded successfully (ID: $AUTH_MODEL_ID)"
-
-    # Load seed data if exists
+    # Load seed data if exists and we have a valid model
     if [ -f /openfga-config/seed-data.json ]; then
-        echo "Loading seed data..."
-        TUPLES=$(jq -c '.tuples' /openfga-config/seed-data.json)
+        if [ -n "$AUTH_MODEL_ID" ] && [ "$AUTH_MODEL_ID" != "null" ]; then
+            echo "Loading seed data..."
+            TUPLES=$(jq -c '.tuples' /openfga-config/seed-data.json)
 
-        WRITE_RESPONSE=$(curl -s -X POST "http://localhost:8080/stores/$STORE_ID/write" \
-            -H "Content-Type: application/json" \
-            -d "{\"writes\":{\"tuple_keys\":$TUPLES},\"authorization_model_id\":\"$AUTH_MODEL_ID\"}")
+            echo "📤 Writing $(echo $TUPLES | jq '. | length') tuples to store..."
 
-        echo "Seed data response: $WRITE_RESPONSE"
+            WRITE_RESPONSE=$(curl -s -X POST "http://localhost:8080/stores/$STORE_ID/write" \
+                -H "Content-Type: application/json" \
+                -d "{\"writes\":{\"tuple_keys\":$TUPLES},\"authorization_model_id\":\"$AUTH_MODEL_ID\"}")
 
-        # Check if write was successful
-        if echo "$WRITE_RESPONSE" | jq -e '.code' > /dev/null 2>&1; then
-            echo "❌ ERROR: Failed to write seed data"
-            exit 1
+            echo "Seed data response: $WRITE_RESPONSE"
+
+            # Check if write was successful
+            if echo "$WRITE_RESPONSE" | jq -e '.code' > /dev/null 2>&1; then
+                ERROR_CODE=$(echo "$WRITE_RESPONSE" | jq -r '.code')
+                ERROR_MSG=$(echo "$WRITE_RESPONSE" | jq -r '.message')
+
+                # If error is about tuples already existing, that's okay
+                if [[ "$ERROR_MSG" == *"already exists"* ]] || [[ "$ERROR_MSG" == *"duplicate"* ]]; then
+                    echo "⚠️  Seed data may already exist: $ERROR_MSG"
+                    echo "✅ Continuing with existing data"
+                else
+                    echo "⚠️  WARNING: Failed to write seed data"
+                    echo "Error code: $ERROR_CODE"
+                    echo "Error message: $ERROR_MSG"
+                    echo "Continuing anyway - manual data initialization may be required"
+                fi
+            else
+                echo "✅ Seed data loaded successfully"
+            fi
+        else
+            echo "⚠️  Skipping seed data load - no valid authorization model ID"
         fi
-
-        echo "✅ Seed data loaded successfully"
     fi
 else
     echo "No OpenFGA configuration found, skipping initialization"
