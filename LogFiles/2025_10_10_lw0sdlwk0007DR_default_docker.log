@@ -1,0 +1,605 @@
+2025-10-10T21:40:37.636478586Z Starting OpenFGA with SQL Server and Azure Functions...
+2025-10-10T21:40:37.642926885Z Running OpenFGA database migrations...
+2025-10-10T21:40:37.773697478Z /start.sh: line 14: /usr/local/bin/openfga: cannot execute binary file: Exec format error
+2025-10-10T21:40:37.773948514Z WARNING: Migration may have already been run or encountered an error
+2025-10-10T21:40:37.773963787Z Starting OpenFGA on port 8080 with SQL Server backend...
+2025-10-10T21:40:37.774181437Z Waiting for OpenFGA to be ready...
+2025-10-10T21:40:38.172384849Z Waiting for OpenFGA... (1/30)
+2025-10-10T21:40:40.267612971Z Waiting for OpenFGA... (2/30)
+2025-10-10T21:40:42.436174459Z Waiting for OpenFGA... (3/30)
+2025-10-10T21:40:44.548716940Z Waiting for OpenFGA... (4/30)
+2025-10-10T21:40:47.253498276Z Waiting for OpenFGA... (5/30)
+2025-10-10T21:40:49.406260199Z Waiting for OpenFGA... (6/30)
+2025-10-10T21:40:51.888238062Z Waiting for OpenFGA... (7/30)
+2025-10-10T21:40:54.424708570Z Waiting for OpenFGA... (8/30)
+2025-10-10T21:40:56.945618515Z Waiting for OpenFGA... (9/30)
+2025-10-10T21:40:59.281392201Z Waiting for OpenFGA... (10/30)
+2025-10-10T21:41:01.884227078Z Waiting for OpenFGA... (11/30)
+2025-10-10T21:41:04.199172951Z Waiting for OpenFGA... (12/30)
+2025-10-10T21:41:06.654829372Z Waiting for OpenFGA... (13/30)
+2025-10-10T21:41:08.944791566Z Waiting for OpenFGA... (14/30)
+2025-10-10T21:41:11.050280236Z Waiting for OpenFGA... (15/30)
+2025-10-10T21:41:13.103828836Z Waiting for OpenFGA... (16/30)
+2025-10-10T21:41:15.177133907Z Waiting for OpenFGA... (17/30)
+2025-10-10T21:41:17.264412424Z Waiting for OpenFGA... (18/30)
+2025-10-10T21:41:19.372791774Z Waiting for OpenFGA... (19/30)
+2025-10-10T21:41:21.498069448Z Waiting for OpenFGA... (20/30)
+2025-10-10T21:41:23.615967446Z Waiting for OpenFGA... (21/30)
+2025-10-10T21:41:25.869114608Z Waiting for OpenFGA... (22/30)
+2025-10-10T21:41:28.063842669Z Waiting for OpenFGA... (23/30)
+2025-10-10T21:41:30.361692482Z Waiting for OpenFGA... (24/30)
+2025-10-10T21:41:32.569502179Z Waiting for OpenFGA... (25/30)
+2025-10-10T21:41:34.657340043Z Waiting for OpenFGA... (26/30)
+2025-10-10T21:41:36.999276337Z Waiting for OpenFGA... (27/30)
+2025-10-10T21:41:39.120155057Z Waiting for OpenFGA... (28/30)
+2025-10-10T21:41:41.266889004Z Waiting for OpenFGA... (29/30)
+2025-10-10T21:41:43.514532283Z Waiting for OpenFGA... (30/30)
+2025-10-10T21:41:45.563103036Z ERROR: OpenFGA failed to start
+2025-10-10T21:41:45.584942844Z /start.sh: line 23: /usr/local/bin/openfga: cannot execute binary file: Exec format error
+
+2025-10-10T21:47:52.234573756Z Starting OpenFGA with SQL Server and Azure Functions...
+2025-10-10T21:47:52.234644127Z Running OpenFGA database migrations...
+2025-10-10T21:47:52.343643635Z WARNING: Migration may have already been run or encountered an error
+2025-10-10T21:47:52.343677621Z Starting OpenFGA on port 8080 with SQL Server backend...
+2025-10-10T21:47:52.343685753Z Waiting for OpenFGA to be ready...
+2025-10-10T21:47:52.390178837Z /start.sh: line 14: /usr/local/bin/openfga: cannot execute binary file: Exec format error
+2025-10-10T21:47:53.302416841Z Waiting for OpenFGA... (1/30)
+2025-10-10T21:47:55.582774552Z Waiting for OpenFGA... (2/30)
+2025-10-10T21:47:57.963978485Z Waiting for OpenFGA... (3/30)
+2025-10-10T21:48:00.604515381Z Waiting for OpenFGA... (4/30)
+2025-10-10T21:48:03.721301744Z Waiting for OpenFGA... (5/30)
+2025-10-10T21:48:07.003264556Z Waiting for OpenFGA... (6/30)
+2025-10-10T21:48:09.871590627Z Waiting for OpenFGA... (7/30)
+2025-10-10T21:48:12.033963840Z Waiting for OpenFGA... (8/30)
+2025-10-10T21:48:14.377216764Z Waiting for OpenFGA... (9/30)
+2025-10-10T21:48:17.034887291Z Waiting for OpenFGA... (10/30)
+2025-10-10T21:48:19.504184458Z Waiting for OpenFGA... (11/30)
+2025-10-10T21:48:22.027498180Z Waiting for OpenFGA... (12/30)
+2025-10-10T21:48:24.260995387Z Waiting for OpenFGA... (13/30)
+2025-10-10T21:48:26.719130522Z Waiting for OpenFGA... (14/30)
+2025-10-10T21:48:29.219968271Z Waiting for OpenFGA... (15/30)
+2025-10-10T21:48:31.808605387Z Waiting for OpenFGA... (16/30)
+2025-10-10T21:48:34.480549599Z Waiting for OpenFGA... (17/30)
+2025-10-10T21:48:37.098109151Z Waiting for OpenFGA... (18/30)
+2025-10-10T21:48:40.079230561Z Waiting for OpenFGA... (19/30)
+2025-10-10T21:48:42.420031932Z Waiting for OpenFGA... (20/30)
+2025-10-10T21:48:44.598753335Z Waiting for OpenFGA... (21/30)
+2025-10-10T21:48:46.742115648Z Waiting for OpenFGA... (22/30)
+2025-10-10T21:48:48.869623319Z Waiting for OpenFGA... (23/30)
+2025-10-10T21:48:51.151321605Z Waiting for OpenFGA... (24/30)
+2025-10-10T21:48:53.276293438Z Waiting for OpenFGA... (25/30)
+2025-10-10T21:48:55.380955890Z Waiting for OpenFGA... (26/30)
+2025-10-10T21:48:57.581918226Z Waiting for OpenFGA... (27/30)
+2025-10-10T21:48:59.712948579Z Waiting for OpenFGA... (28/30)
+2025-10-10T21:49:01.963050117Z Waiting for OpenFGA... (29/30)
+2025-10-10T21:49:04.068726132Z Waiting for OpenFGA... (30/30)
+2025-10-10T21:49:06.201505074Z ERROR: OpenFGA failed to start
+2025-10-10T21:49:06.367384761Z /start.sh: line 23: /usr/local/bin/openfga: cannot execute binary file: Exec format error
+
+2025-10-10T21:50:13.836036841Z Starting OpenFGA with SQL Server and Azure Functions...
+2025-10-10T21:50:13.856755936Z Running OpenFGA database migrations...
+2025-10-10T21:50:13.982024851Z WARNING: Migration may have already been run or encountered an error
+2025-10-10T21:50:13.982063770Z Starting OpenFGA on port 8080 with SQL Server backend...
+2025-10-10T21:50:13.982071544Z Waiting for OpenFGA to be ready...
+2025-10-10T21:50:13.992428358Z /start.sh: line 14: /usr/local/bin/openfga: cannot execute binary file: Exec format error
+2025-10-10T21:50:14.848168628Z Waiting for OpenFGA... (1/30)
+2025-10-10T21:50:16.967399445Z Waiting for OpenFGA... (2/30)
+2025-10-10T21:50:19.069929572Z Waiting for OpenFGA... (3/30)
+2025-10-10T21:50:21.303326471Z Waiting for OpenFGA... (4/30)
+2025-10-10T21:50:23.428783048Z Waiting for OpenFGA... (5/30)
+2025-10-10T21:50:25.575166436Z Waiting for OpenFGA... (6/30)
+2025-10-10T21:50:27.842692382Z Waiting for OpenFGA... (7/30)
+2025-10-10T21:50:30.132270079Z Waiting for OpenFGA... (8/30)
+2025-10-10T21:50:32.266584700Z Waiting for OpenFGA... (9/30)
+2025-10-10T21:50:34.322152881Z Waiting for OpenFGA... (10/30)
+2025-10-10T21:50:36.387820405Z Waiting for OpenFGA... (11/30)
+2025-10-10T21:50:38.461945007Z Waiting for OpenFGA... (12/30)
+2025-10-10T21:50:40.538021128Z Waiting for OpenFGA... (13/30)
+2025-10-10T21:50:42.630660398Z Waiting for OpenFGA... (14/30)
+2025-10-10T21:50:44.719529501Z Waiting for OpenFGA... (15/30)
+2025-10-10T21:50:46.802952706Z Waiting for OpenFGA... (16/30)
+2025-10-10T21:50:48.898716247Z Waiting for OpenFGA... (17/30)
+2025-10-10T21:50:50.982312444Z Waiting for OpenFGA... (18/30)
+2025-10-10T21:50:53.089892775Z Waiting for OpenFGA... (19/30)
+2025-10-10T21:50:55.213313027Z Waiting for OpenFGA... (20/30)
+2025-10-10T21:50:57.232854614Z Waiting for OpenFGA... (21/30)
+2025-10-10T21:50:59.326529668Z Waiting for OpenFGA... (22/30)
+2025-10-10T21:51:01.466133872Z Waiting for OpenFGA... (23/30)
+2025-10-10T21:51:03.707971654Z Waiting for OpenFGA... (24/30)
+2025-10-10T21:51:05.787427885Z Waiting for OpenFGA... (25/30)
+2025-10-10T21:51:07.988841156Z Waiting for OpenFGA... (26/30)
+2025-10-10T21:51:10.048711399Z Waiting for OpenFGA... (27/30)
+2025-10-10T21:51:12.104044597Z Waiting for OpenFGA... (28/30)
+2025-10-10T21:51:14.209811512Z Waiting for OpenFGA... (29/30)
+2025-10-10T21:51:16.372130530Z Waiting for OpenFGA... (30/30)
+2025-10-10T21:51:18.454859423Z ERROR: OpenFGA failed to start
+2025-10-10T21:51:18.484504450Z /start.sh: line 23: /usr/local/bin/openfga: cannot execute binary file: Exec format error
+
+2025-10-10T21:56:34.372476623Z Starting OpenFGA with SQL Server and Azure Functions...
+2025-10-10T21:56:34.391141607Z Running OpenFGA database migrations...
+2025-10-10T21:56:34.460838143Z WARNING: Migration may have already been run or encountered an error
+2025-10-10T21:56:34.461112149Z Starting OpenFGA on port 8080 with SQL Server backend...
+2025-10-10T21:56:34.461126397Z Waiting for OpenFGA to be ready...
+2025-10-10T21:56:34.461154663Z /start.sh: line 14: /usr/local/bin/openfga: cannot execute binary file: Exec format error
+2025-10-10T21:56:35.205586471Z Waiting for OpenFGA... (1/30)
+2025-10-10T21:56:37.384044132Z Waiting for OpenFGA... (2/30)
+2025-10-10T21:56:40.138226401Z Waiting for OpenFGA... (3/30)
+2025-10-10T21:56:42.770658218Z Waiting for OpenFGA... (4/30)
+2025-10-10T21:56:44.989794227Z Waiting for OpenFGA... (5/30)
+2025-10-10T21:56:47.355159161Z Waiting for OpenFGA... (6/30)
+2025-10-10T21:56:49.513080891Z Waiting for OpenFGA... (7/30)
+2025-10-10T21:56:51.777607219Z Waiting for OpenFGA... (8/30)
+2025-10-10T21:56:53.878023087Z Waiting for OpenFGA... (9/30)
+2025-10-10T21:56:56.029221908Z Waiting for OpenFGA... (10/30)
+2025-10-10T21:56:58.137903375Z Waiting for OpenFGA... (11/30)
+2025-10-10T21:57:00.195411057Z Waiting for OpenFGA... (12/30)
+2025-10-10T21:57:02.410811828Z Waiting for OpenFGA... (13/30)
+2025-10-10T21:57:04.470989586Z Waiting for OpenFGA... (14/30)
+2025-10-10T21:57:06.548272356Z Waiting for OpenFGA... (15/30)
+2025-10-10T21:57:08.798116177Z Waiting for OpenFGA... (16/30)
+2025-10-10T21:57:10.981413303Z Waiting for OpenFGA... (17/30)
+2025-10-10T21:57:13.222440072Z Waiting for OpenFGA... (18/30)
+2025-10-10T21:57:15.383983069Z Waiting for OpenFGA... (19/30)
+2025-10-10T21:57:17.541751839Z Waiting for OpenFGA... (20/30)
+2025-10-10T21:57:19.642689683Z Waiting for OpenFGA... (21/30)
+2025-10-10T21:57:21.903155466Z Waiting for OpenFGA... (22/30)
+2025-10-10T21:57:24.023085581Z Waiting for OpenFGA... (23/30)
+2025-10-10T21:57:26.281494775Z Waiting for OpenFGA... (24/30)
+2025-10-10T21:57:28.436887126Z Waiting for OpenFGA... (25/30)
+2025-10-10T21:57:30.721219736Z Waiting for OpenFGA... (26/30)
+2025-10-10T21:57:32.939959052Z Waiting for OpenFGA... (27/30)
+2025-10-10T21:57:35.067073974Z Waiting for OpenFGA... (28/30)
+2025-10-10T21:57:37.253354622Z Waiting for OpenFGA... (29/30)
+2025-10-10T21:57:39.392893354Z Waiting for OpenFGA... (30/30)
+2025-10-10T21:57:41.546355597Z ERROR: OpenFGA failed to start
+2025-10-10T21:57:43.101991902Z /start.sh: line 23: /usr/local/bin/openfga: cannot execute binary file: Exec format error
+
+2025-10-10T22:00:07.993930731Z Starting OpenFGA with SQL Server and Azure Functions...
+2025-10-10T22:00:07.994007492Z Running OpenFGA database migrations...
+2025-10-10T22:00:08.234470300Z /start.sh: line 14: /usr/local/bin/openfga: cannot execute binary file: Exec format error
+2025-10-10T22:00:08.234560160Z WARNING: Migration may have already been run or encountered an error
+2025-10-10T22:00:08.234569185Z Starting OpenFGA on port 8080 with SQL Server backend...
+2025-10-10T22:00:08.234575862Z Waiting for OpenFGA to be ready...
+2025-10-10T22:00:08.934668446Z Waiting for OpenFGA... (1/30)
+2025-10-10T22:00:11.218662771Z Waiting for OpenFGA... (2/30)
+2025-10-10T22:00:13.342100884Z Waiting for OpenFGA... (3/30)
+2025-10-10T22:00:15.593718780Z Waiting for OpenFGA... (4/30)
+2025-10-10T22:00:18.200822052Z Waiting for OpenFGA... (5/30)
+2025-10-10T22:00:20.701083843Z Waiting for OpenFGA... (6/30)
+2025-10-10T22:00:23.238038458Z Waiting for OpenFGA... (7/30)
+2025-10-10T22:00:25.428747859Z Waiting for OpenFGA... (8/30)
+2025-10-10T22:00:27.662565541Z Waiting for OpenFGA... (9/30)
+2025-10-10T22:00:29.975820781Z Waiting for OpenFGA... (10/30)
+2025-10-10T22:00:32.298623908Z Waiting for OpenFGA... (11/30)
+2025-10-10T22:00:34.621075026Z Waiting for OpenFGA... (12/30)
+2025-10-10T22:00:36.980038599Z Waiting for OpenFGA... (13/30)
+2025-10-10T22:00:39.046431679Z Waiting for OpenFGA... (14/30)
+2025-10-10T22:00:41.226075240Z Waiting for OpenFGA... (15/30)
+2025-10-10T22:00:43.307759429Z Waiting for OpenFGA... (16/30)
+2025-10-10T22:00:45.371804873Z Waiting for OpenFGA... (17/30)
+2025-10-10T22:00:47.444499453Z Waiting for OpenFGA... (18/30)
+2025-10-10T22:00:49.507221516Z Waiting for OpenFGA... (19/30)
+2025-10-10T22:00:51.825670700Z Waiting for OpenFGA... (20/30)
+2025-10-10T22:00:53.895422188Z Waiting for OpenFGA... (21/30)
+2025-10-10T22:00:56.003108059Z Waiting for OpenFGA... (22/30)
+2025-10-10T22:00:58.109612555Z Waiting for OpenFGA... (23/30)
+2025-10-10T22:01:00.208919665Z Waiting for OpenFGA... (24/30)
+2025-10-10T22:01:02.271915466Z Waiting for OpenFGA... (25/30)
+2025-10-10T22:01:04.340335050Z Waiting for OpenFGA... (26/30)
+2025-10-10T22:01:06.468320516Z Waiting for OpenFGA... (27/30)
+2025-10-10T22:01:08.524732526Z Waiting for OpenFGA... (28/30)
+2025-10-10T22:01:10.594749599Z Waiting for OpenFGA... (29/30)
+2025-10-10T22:01:12.642737956Z Waiting for OpenFGA... (30/30)
+2025-10-10T22:01:14.838549136Z ERROR: OpenFGA failed to start
+2025-10-10T22:01:14.848109003Z /start.sh: line 23: /usr/local/bin/openfga: cannot execute binary file: Exec format error
+
+2025-10-10T22:06:29.463035220Z Starting OpenFGA with SQL Server and Azure Functions...
+2025-10-10T22:06:29.463101691Z Running OpenFGA database migrations...
+2025-10-10T22:06:29.463110346Z WARNING: Migration may have already been run or encountered an error
+2025-10-10T22:06:29.463117081Z Starting OpenFGA on port 8080 with SQL Server backend...
+2025-10-10T22:06:29.463123295Z Waiting for OpenFGA to be ready...
+2025-10-10T22:06:29.463144540Z /start.sh: line 14: /usr/local/bin/openfga: cannot execute binary file: Exec format error
+2025-10-10T22:06:30.367347877Z Waiting for OpenFGA... (1/30)
+2025-10-10T22:06:32.722006101Z Waiting for OpenFGA... (2/30)
+2025-10-10T22:06:34.974477555Z Waiting for OpenFGA... (3/30)
+2025-10-10T22:06:37.555439216Z Waiting for OpenFGA... (4/30)
+2025-10-10T22:06:40.186407961Z Waiting for OpenFGA... (5/30)
+2025-10-10T22:06:42.432339212Z Waiting for OpenFGA... (6/30)
+2025-10-10T22:06:44.684389348Z Waiting for OpenFGA... (7/30)
+2025-10-10T22:06:46.842320326Z Waiting for OpenFGA... (8/30)
+2025-10-10T22:06:48.984685987Z Waiting for OpenFGA... (9/30)
+2025-10-10T22:06:51.065611377Z Waiting for OpenFGA... (10/30)
+2025-10-10T22:06:53.141810244Z Waiting for OpenFGA... (11/30)
+2025-10-10T22:06:55.226365674Z Waiting for OpenFGA... (12/30)
+2025-10-10T22:06:57.289158756Z Waiting for OpenFGA... (13/30)
+2025-10-10T22:06:59.369978720Z Waiting for OpenFGA... (14/30)
+2025-10-10T22:07:01.438733653Z Waiting for OpenFGA... (15/30)
+2025-10-10T22:07:03.854534522Z Waiting for OpenFGA... (16/30)
+2025-10-10T22:07:05.943586138Z Waiting for OpenFGA... (17/30)
+2025-10-10T22:07:08.029369101Z Waiting for OpenFGA... (18/30)
+2025-10-10T22:07:10.123821552Z Waiting for OpenFGA... (19/30)
+2025-10-10T22:07:12.354115743Z Waiting for OpenFGA... (20/30)
+2025-10-10T22:07:14.492166954Z Waiting for OpenFGA... (21/30)
+2025-10-10T22:07:16.737396923Z Waiting for OpenFGA... (22/30)
+2025-10-10T22:07:18.956913616Z Waiting for OpenFGA... (23/30)
+2025-10-10T22:07:21.241633686Z Waiting for OpenFGA... (24/30)
+2025-10-10T22:07:23.438806421Z Waiting for OpenFGA... (25/30)
+2025-10-10T22:07:25.583067722Z Waiting for OpenFGA... (26/30)
+2025-10-10T22:07:27.803411010Z Waiting for OpenFGA... (27/30)
+2025-10-10T22:07:29.988683424Z Waiting for OpenFGA... (28/30)
+2025-10-10T22:07:32.170808311Z Waiting for OpenFGA... (29/30)
+2025-10-10T22:07:34.461997221Z Waiting for OpenFGA... (30/30)
+2025-10-10T22:07:36.597921430Z ERROR: OpenFGA failed to start
+2025-10-10T22:07:36.766125175Z /start.sh: line 23: /usr/local/bin/openfga: cannot execute binary file: Exec format error
+
+2025-10-10T22:10:08.800750723Z Starting OpenFGA with SQL Server and Azure Functions...
+2025-10-10T22:10:08.811772448Z Running OpenFGA database migrations...
+2025-10-10T22:10:08.811783509Z WARNING: Migration may have already been run or encountered an error
+2025-10-10T22:10:08.811790133Z Starting OpenFGA on port 8080 with SQL Server backend...
+2025-10-10T22:10:08.811796163Z Waiting for OpenFGA to be ready...
+2025-10-10T22:10:08.811844165Z /start.sh: line 14: /usr/local/bin/openfga: cannot execute binary file: Exec format error
+2025-10-10T22:10:09.767367451Z Waiting for OpenFGA... (1/30)
+2025-10-10T22:10:11.985454690Z Waiting for OpenFGA... (2/30)
+2025-10-10T22:10:14.120525605Z Waiting for OpenFGA... (3/30)
+2025-10-10T22:10:16.468204725Z Waiting for OpenFGA... (4/30)
+2025-10-10T22:10:18.746828989Z Waiting for OpenFGA... (5/30)
+2025-10-10T22:10:20.910018859Z Waiting for OpenFGA... (6/30)
+2025-10-10T22:10:23.144427139Z Waiting for OpenFGA... (7/30)
+2025-10-10T22:10:25.297358805Z Waiting for OpenFGA... (8/30)
+2025-10-10T22:10:27.375572170Z Waiting for OpenFGA... (9/30)
+2025-10-10T22:10:29.556672083Z Waiting for OpenFGA... (10/30)
+2025-10-10T22:10:31.698353076Z Waiting for OpenFGA... (11/30)
+2025-10-10T22:10:33.834299547Z Waiting for OpenFGA... (12/30)
+2025-10-10T22:10:35.933413440Z Waiting for OpenFGA... (13/30)
+2025-10-10T22:10:37.999201554Z Waiting for OpenFGA... (14/30)
+2025-10-10T22:10:40.073310233Z Waiting for OpenFGA... (15/30)
+2025-10-10T22:10:42.170186820Z Waiting for OpenFGA... (16/30)
+2025-10-10T22:10:44.283245166Z Waiting for OpenFGA... (17/30)
+2025-10-10T22:10:46.363705430Z Waiting for OpenFGA... (18/30)
+2025-10-10T22:10:48.441547444Z Waiting for OpenFGA... (19/30)
+2025-10-10T22:10:50.512910320Z Waiting for OpenFGA... (20/30)
+2025-10-10T22:10:52.595063217Z Waiting for OpenFGA... (21/30)
+2025-10-10T22:10:54.672017271Z Waiting for OpenFGA... (22/30)
+2025-10-10T22:10:56.771012014Z Waiting for OpenFGA... (23/30)
+2025-10-10T22:10:58.865615339Z Waiting for OpenFGA... (24/30)
+2025-10-10T22:11:00.920398675Z Waiting for OpenFGA... (25/30)
+2025-10-10T22:11:02.992598533Z Waiting for OpenFGA... (26/30)
+2025-10-10T22:11:05.137571857Z Waiting for OpenFGA... (27/30)
+2025-10-10T22:11:07.207511210Z Waiting for OpenFGA... (28/30)
+2025-10-10T22:11:09.294198343Z Waiting for OpenFGA... (29/30)
+2025-10-10T22:11:11.376321098Z Waiting for OpenFGA... (30/30)
+2025-10-10T22:11:13.601945354Z ERROR: OpenFGA failed to start
+2025-10-10T22:11:13.633797086Z /start.sh: line 23: /usr/local/bin/openfga: cannot execute binary file: Exec format error
+
+2025-10-10T22:16:27.093102144Z Starting OpenFGA with SQL Server and Azure Functions...
+2025-10-10T22:16:27.093218487Z Running OpenFGA database migrations...
+2025-10-10T22:16:27.142102804Z WARNING: Migration may have already been run or encountered an error
+2025-10-10T22:16:27.142138240Z Starting OpenFGA on port 8080 with SQL Server backend...
+2025-10-10T22:16:27.142146152Z Waiting for OpenFGA to be ready...
+2025-10-10T22:16:27.142169006Z /start.sh: line 14: /usr/local/bin/openfga: cannot execute binary file: Exec format error
+2025-10-10T22:16:27.395189517Z Waiting for OpenFGA... (1/30)
+2025-10-10T22:16:29.549995981Z Waiting for OpenFGA... (2/30)
+2025-10-10T22:16:32.043110879Z Waiting for OpenFGA... (3/30)
+2025-10-10T22:16:34.541977507Z Waiting for OpenFGA... (4/30)
+2025-10-10T22:16:37.566985654Z Waiting for OpenFGA... (5/30)
+2025-10-10T22:16:40.103134075Z Waiting for OpenFGA... (6/30)
+2025-10-10T22:16:42.727251065Z Waiting for OpenFGA... (7/30)
+2025-10-10T22:16:44.922857539Z Waiting for OpenFGA... (8/30)
+2025-10-10T22:16:47.376535236Z Waiting for OpenFGA... (9/30)
+2025-10-10T22:16:49.602129497Z Waiting for OpenFGA... (10/30)
+2025-10-10T22:16:52.087782742Z Waiting for OpenFGA... (11/30)
+2025-10-10T22:16:54.478067738Z Waiting for OpenFGA... (12/30)
+2025-10-10T22:16:56.646885098Z Waiting for OpenFGA... (13/30)
+2025-10-10T22:16:59.314794305Z Waiting for OpenFGA... (14/30)
+2025-10-10T22:17:01.576627911Z Waiting for OpenFGA... (15/30)
+2025-10-10T22:17:03.986432415Z Waiting for OpenFGA... (16/30)
+2025-10-10T22:17:06.465071005Z Waiting for OpenFGA... (17/30)
+2025-10-10T22:17:08.746919102Z Waiting for OpenFGA... (18/30)
+2025-10-10T22:17:10.986533563Z Waiting for OpenFGA... (19/30)
+2025-10-10T22:17:13.260873111Z Waiting for OpenFGA... (20/30)
+2025-10-10T22:17:15.450735420Z Waiting for OpenFGA... (21/30)
+2025-10-10T22:17:17.719533598Z Waiting for OpenFGA... (22/30)
+2025-10-10T22:17:20.046088123Z Waiting for OpenFGA... (23/30)
+2025-10-10T22:17:22.206300686Z Waiting for OpenFGA... (24/30)
+2025-10-10T22:17:24.568018875Z Waiting for OpenFGA... (25/30)
+2025-10-10T22:17:27.253789312Z Waiting for OpenFGA... (26/30)
+2025-10-10T22:17:29.688836197Z Waiting for OpenFGA... (27/30)
+2025-10-10T22:17:32.039247841Z Waiting for OpenFGA... (28/30)
+2025-10-10T22:17:34.292525704Z Waiting for OpenFGA... (29/30)
+2025-10-10T22:17:36.910445675Z Waiting for OpenFGA... (30/30)
+2025-10-10T22:17:39.363243459Z ERROR: OpenFGA failed to start
+2025-10-10T22:17:39.419896589Z /start.sh: line 23: /usr/local/bin/openfga: cannot execute binary file: Exec format error
+
+2025-10-10T22:55:44.823536591Z Starting OpenFGA with SQL Server and Azure Functions...
+2025-10-10T22:55:44.823626681Z Running OpenFGA database migrations...
+2025-10-10T22:55:46.716571326Z {"level":"info","timestamp":1760136946.6994936,"msg":"db info","build.version":"dev","build.commit":"none","current version":7}
+2025-10-10T22:55:46.716616590Z {"level":"info","timestamp":1760136946.6996434,"msg":"running all migrations","build.version":"dev","build.commit":"none"}
+
+2025-10-10T23:19:28.1872649Z Starting OpenFGA with SQL Server and Azure Functions...
+2025-10-10T23:19:28.2056198Z Running OpenFGA database migrations...
+2025-10-10T23:19:34.2092251Z {"level":"info","timestamp":1760138374.207654,"msg":"db info","build.version":"dev","build.commit":"none","current version":7}
+2025-10-10T23:19:34.2200029Z {"level":"info","timestamp":1760138374.2082343,"msg":"running all migrations","build.version":"dev","build.commit":"none"}
+2025-10-10T23:19:34.4476112Z {"level":"info","timestamp":1760138374.4438274,"msg":"migration done","build.version":"dev","build.commit":"none"}
+2025-10-10T23:19:34.6629954Z Starting OpenFGA on port 8080 with SQL Server backend...
+2025-10-10T23:19:34.6630730Z Waiting for OpenFGA to be ready (this may take up to 3 minutes for SQL migrations)...
+2025-10-10T23:19:37.9858946Z ⏳ Waiting for OpenFGA... (0s / 180s)
+2025-10-10T23:19:44.2412303Z ✅ OpenFGA is ready! (took 5s)
+2025-10-10T23:19:44.5790126Z Initializing OpenFGA with authorization model...
+2025-10-10T23:19:46.2343721Z Using existing store: 01K785TE28A2Z3NWGAABN1TE8E
+2025-10-10T23:19:46.2344511Z Uploading authorization model...
+2025-10-10T23:19:46.8082189Z Authorization model uploaded
+2025-10-10T23:19:46.8082822Z Loading seed data...
+2025-10-10T23:19:47.8893039Z Seed data response: {"code":"latest_authorization_model_not_found","message":"No authorization models found for store '01K785TE28A2Z3NWGAABN1TE8E'"}
+2025-10-10T23:19:47.8913000Z Seed data loaded successfully
+2025-10-10T23:19:47.8913325Z Starting Azure Functions host with OPENFGA_STORE_ID=01K785TE28A2Z3NWGAABN1TE8E...
+2025-10-10T23:20:31.0062129Z info: Host.Triggers.Warmup[0]
+2025-10-10T23:20:31.0062849Z       Initializing Warmup Extension.
+2025-10-10T23:20:32.0778154Z info: Host.Startup[503]
+2025-10-10T23:20:32.0779390Z       Initializing Host. OperationId: '15f3a6b7-db87-4167-b524-c1c4650aab4b'.
+2025-10-10T23:20:32.2061214Z info: Host.Startup[504]
+2025-10-10T23:20:32.2252341Z       Host initialization: ConsecutiveErrors=0, StartupCount=1, OperationId=15f3a6b7-db87-4167-b524-c1c4650aab4b
+2025-10-10T23:20:32.5451619Z info: Microsoft.Azure.WebJobs.Hosting.OptionsLoggingService[0]
+2025-10-10T23:20:32.5452388Z       ApplicationInsightsLoggerOptions
+2025-10-10T23:20:32.5452465Z       {
+2025-10-10T23:20:32.5452536Z         "SamplingSettings": {
+2025-10-10T23:20:32.5452600Z           "EvaluationInterval": "00:00:15",
+2025-10-10T23:20:32.5452708Z           "InitialSamplingPercentage": 100.0,
+2025-10-10T23:20:32.5452774Z           "MaxSamplingPercentage": 100.0,
+2025-10-10T23:20:32.5452873Z           "MaxTelemetryItemsPerSecond": 20.0,
+2025-10-10T23:20:32.5452939Z           "MinSamplingPercentage": 0.1,
+2025-10-10T23:20:32.5453010Z           "MovingAverageRatio": 0.25,
+2025-10-10T23:20:32.5453076Z           "SamplingPercentageDecreaseTimeout": "00:02:00",
+2025-10-10T23:20:32.5453140Z           "SamplingPercentageIncreaseTimeout": "00:15:00"
+2025-10-10T23:20:32.5453200Z         },
+2025-10-10T23:20:32.5453263Z         "SamplingExcludedTypes": null,
+2025-10-10T23:20:32.5453357Z         "SamplingIncludedTypes": null,
+2025-10-10T23:20:32.5453421Z         "SnapshotConfiguration": null,
+2025-10-10T23:20:32.5453485Z         "EnablePerformanceCountersCollection": true,
+2025-10-10T23:20:32.5453554Z         "HttpAutoCollectionOptions": {
+2025-10-10T23:20:32.5453617Z           "EnableHttpTriggerExtendedInfoCollection": true,
+2025-10-10T23:20:32.5453679Z           "EnableW3CDistributedTracing": true,
+2025-10-10T23:20:32.5453774Z           "EnableResponseHeaderInjection": true
+2025-10-10T23:20:32.5453834Z         },
+2025-10-10T23:20:32.5456057Z         "LiveMetricsInitializationDelay": "00:00:15",
+2025-10-10T23:20:32.5456163Z         "EnableLiveMetrics": true,
+2025-10-10T23:20:32.5456228Z         "EnableLiveMetricsFilters": false,
+2025-10-10T23:20:32.5456289Z         "EnableQueryStringTracing": false,
+2025-10-10T23:20:32.5456397Z         "EnableDependencyTracking": true,
+2025-10-10T23:20:32.5456464Z         "DependencyTrackingOptions": null,
+2025-10-10T23:20:32.5456525Z         "TokenCredentialOptions": null,
+2025-10-10T23:20:32.5456588Z         "DiagnosticsEventListenerLogLevel": null,
+2025-10-10T23:20:32.5456651Z         "EnableAutocollectedMetricsExtractor": false,
+2025-10-10T23:20:32.5456714Z         "EnableMetricsCustomDimensionOptimization": false,
+2025-10-10T23:20:32.5647812Z         "EnableAdaptiveSamplingDelay": true,
+2025-10-10T23:20:32.5648206Z         "AdaptiveSamplingInitializationDelay": "00:00:15"
+2025-10-10T23:20:32.5648280Z       }
+2025-10-10T23:20:32.5648360Z info: Microsoft.Azure.WebJobs.Hosting.OptionsLoggingService[0]
+2025-10-10T23:20:32.5648513Z       LoggerFilterOptions
+2025-10-10T23:20:32.5648579Z       {
+2025-10-10T23:20:32.5648679Z         "MinLevel": "None",
+2025-10-10T23:20:32.5648744Z         "Rules": [
+2025-10-10T23:20:32.5648804Z           {
+2025-10-10T23:20:32.5648866Z             "ProviderName": null,
+2025-10-10T23:20:32.5648927Z             "CategoryName": null,
+2025-10-10T23:20:32.5648989Z             "LogLevel": "Warning",
+2025-10-10T23:20:32.5649053Z             "Filter": null
+2025-10-10T23:20:32.5649113Z           },
+2025-10-10T23:20:32.5649204Z           {
+2025-10-10T23:20:32.5649266Z             "ProviderName": null,
+2025-10-10T23:20:32.5649326Z             "CategoryName": null,
+2025-10-10T23:20:32.5649387Z             "LogLevel": null,
+2025-10-10T23:20:32.5649450Z             "Filter": "<AddFilter>b__0"
+2025-10-10T23:20:32.5649509Z           },
+2025-10-10T23:20:32.5649568Z           {
+2025-10-10T23:20:32.5649667Z             "ProviderName": "Microsoft.Azure.WebJobs.Script.WebHost.Diagnostics.WebHostSystemLoggerProvider",
+2025-10-10T23:20:32.5649733Z             "CategoryName": null,
+2025-10-10T23:20:32.5649797Z             "LogLevel": "None",
+2025-10-10T23:20:32.5649857Z             "Filter": null
+2025-10-10T23:20:32.5649916Z           },
+2025-10-10T23:20:32.5649974Z           {
+2025-10-10T23:20:32.5650044Z             "ProviderName": "Microsoft.Azure.WebJobs.Script.WebHost.Diagnostics.WebHostSystemLoggerProvider",
+2025-10-10T23:20:32.5650138Z             "CategoryName": null,
+2025-10-10T23:20:32.5650200Z             "LogLevel": null,
+2025-10-10T23:20:32.5650262Z             "Filter": "<AddFilter>b__0"
+2025-10-10T23:20:32.5650320Z           },
+2025-10-10T23:20:32.5650499Z           {
+2025-10-10T23:20:32.5650609Z             "ProviderName": null,
+2025-10-10T23:20:32.5650672Z             "CategoryName": null,
+2025-10-10T23:20:32.5650737Z             "LogLevel": null,
+2025-10-10T23:20:32.5650798Z             "Filter": "<AddFilter>b__0"
+2025-10-10T23:20:32.5650857Z           },
+2025-10-10T23:20:32.5651012Z           {
+2025-10-10T23:20:32.5651075Z             "ProviderName": null,
+2025-10-10T23:20:32.5651140Z             "CategoryName": "Host.Function.ToolingConsoleLog",
+2025-10-10T23:20:32.5651203Z             "LogLevel": "Information",
+2025-10-10T23:20:32.5651264Z             "Filter": null
+2025-10-10T23:20:32.5651397Z           },
+2025-10-10T23:20:32.5651556Z           {
+2025-10-10T23:20:32.5651656Z             "ProviderName": "Microsoft.Azure.WebJobs.Script.WebHost.Diagnostics.SystemLoggerProvider",
+2025-10-10T23:20:32.5651724Z             "CategoryName": null,
+2025-10-10T23:20:32.5651785Z             "LogLevel": "None",
+2025-10-10T23:20:32.5651845Z             "Filter": null
+2025-10-10T23:20:32.5651904Z           },
+2025-10-10T23:20:32.5651962Z           {
+2025-10-10T23:20:32.5837837Z             "ProviderName": "Microsoft.Azure.WebJobs.Script.WebHost.Diagnostics.SystemLoggerProvider",
+2025-10-10T23:20:32.5838213Z             "CategoryName": null,
+2025-10-10T23:20:32.5838287Z             "LogLevel": null,
+2025-10-10T23:20:32.5838358Z             "Filter": "<AddFilter>b__0"
+2025-10-10T23:20:32.5838419Z           },
+2025-10-10T23:20:32.5838479Z           {
+2025-10-10T23:20:32.5838549Z             "ProviderName": "Microsoft.Azure.WebJobs.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider",
+2025-10-10T23:20:32.5838613Z             "CategoryName": null,
+2025-10-10T23:20:32.5838712Z             "LogLevel": "Trace",
+2025-10-10T23:20:32.5838777Z             "Filter": null
+2025-10-10T23:20:32.5838837Z           }
+2025-10-10T23:20:32.5838895Z         ]
+2025-10-10T23:20:32.5838954Z       }
+2025-10-10T23:20:32.5839019Z info: Microsoft.Azure.WebJobs.Hosting.OptionsLoggingService[0]
+2025-10-10T23:20:32.5839131Z       LoggerFilterOptions
+2025-10-10T23:20:32.5839193Z       {
+2025-10-10T23:20:32.5839253Z         "MinLevel": "None",
+2025-10-10T23:20:32.5839312Z         "Rules": [
+2025-10-10T23:20:32.5839372Z           {
+2025-10-10T23:20:32.5839431Z             "ProviderName": null,
+2025-10-10T23:20:32.5839491Z             "CategoryName": null,
+2025-10-10T23:20:32.5839581Z             "LogLevel": "Warning",
+2025-10-10T23:20:32.5839645Z             "Filter": null
+2025-10-10T23:20:32.5839706Z           },
+2025-10-10T23:20:32.5839765Z           {
+2025-10-10T23:20:32.5839824Z             "ProviderName": null,
+2025-10-10T23:20:32.5839884Z             "CategoryName": null,
+2025-10-10T23:20:32.5839945Z             "LogLevel": null,
+2025-10-10T23:20:32.5840037Z             "Filter": "<AddFilter>b__0"
+2025-10-10T23:20:32.5840102Z           },
+2025-10-10T23:20:32.5840160Z           {
+2025-10-10T23:20:32.5840227Z             "ProviderName": "Microsoft.Azure.WebJobs.Script.WebHost.Diagnostics.WebHostSystemLoggerProvider",
+2025-10-10T23:20:32.5840289Z             "CategoryName": null,
+2025-10-10T23:20:32.5840782Z             "LogLevel": "None",
+2025-10-10T23:20:32.5840854Z             "Filter": null
+2025-10-10T23:20:32.5840948Z           },
+2025-10-10T23:20:32.5841010Z           {
+2025-10-10T23:20:32.5841077Z             "ProviderName": "Microsoft.Azure.WebJobs.Script.WebHost.Diagnostics.WebHostSystemLoggerProvider",
+2025-10-10T23:20:32.5841139Z             "CategoryName": null,
+2025-10-10T23:20:32.5841200Z             "LogLevel": null,
+2025-10-10T23:20:32.5841262Z             "Filter": "<AddFilter>b__0"
+2025-10-10T23:20:32.5841322Z           },
+2025-10-10T23:20:32.5841414Z           {
+2025-10-10T23:20:32.5841474Z             "ProviderName": null,
+2025-10-10T23:20:32.5841534Z             "CategoryName": null,
+2025-10-10T23:20:32.5841616Z             "LogLevel": null,
+2025-10-10T23:20:32.5841716Z             "Filter": "<AddFilter>b__0"
+2025-10-10T23:20:32.5841778Z           },
+2025-10-10T23:20:32.5841837Z           {
+2025-10-10T23:20:32.5841906Z             "ProviderName": null,
+2025-10-10T23:20:32.5841970Z             "CategoryName": "Host.Function.ToolingConsoleLog",
+2025-10-10T23:20:32.5842070Z             "LogLevel": "Information",
+2025-10-10T23:20:32.5842135Z             "Filter": null
+2025-10-10T23:20:32.5842195Z           },
+2025-10-10T23:20:32.5842253Z           {
+2025-10-10T23:20:32.5842318Z             "ProviderName": "Microsoft.Azure.WebJobs.Script.WebHost.Diagnostics.SystemLoggerProvider",
+2025-10-10T23:20:32.5842380Z             "CategoryName": null,
+2025-10-10T23:20:32.5842443Z             "LogLevel": "None",
+2025-10-10T23:20:32.5842537Z             "Filter": null
+2025-10-10T23:20:32.5842597Z           },
+2025-10-10T23:20:32.5842656Z           {
+2025-10-10T23:20:32.5842721Z             "ProviderName": "Microsoft.Azure.WebJobs.Script.WebHost.Diagnostics.SystemLoggerProvider",
+2025-10-10T23:20:32.5842782Z             "CategoryName": null,
+2025-10-10T23:20:32.5842843Z             "LogLevel": null,
+2025-10-10T23:20:32.5842935Z             "Filter": "<AddFilter>b__0"
+2025-10-10T23:20:32.5842999Z           },
+2025-10-10T23:20:32.5843057Z           {
+2025-10-10T23:20:32.5843125Z             "ProviderName": "Microsoft.Azure.WebJobs.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider",
+2025-10-10T23:20:32.5843186Z             "CategoryName": null,
+2025-10-10T23:20:32.5843247Z             "LogLevel": "Trace",
+2025-10-10T23:20:32.5843308Z             "Filter": null
+2025-10-10T23:20:32.5843398Z           }
+2025-10-10T23:20:32.5843459Z         ]
+2025-10-10T23:20:32.5843517Z       }
+2025-10-10T23:20:32.5843580Z info: Microsoft.Azure.WebJobs.Hosting.OptionsLoggingService[0]
+2025-10-10T23:20:32.5843642Z       HttpWorkerOptions
+2025-10-10T23:20:32.5843700Z       {
+2025-10-10T23:20:32.5843761Z         "Type": 0,
+2025-10-10T23:20:32.5843862Z         "Description": null,
+2025-10-10T23:20:32.5843924Z         "Arguments": null,
+2025-10-10T23:20:32.5843982Z         "Port": 0,
+2025-10-10T23:20:32.5844044Z         "EnableForwardingHttpRequest": false,
+2025-10-10T23:20:32.5844108Z         "EnableProxyingHttpRequest": false,
+2025-10-10T23:20:32.5844170Z         "InitializationTimeout": "00:00:30"
+2025-10-10T23:20:32.5844264Z       }
+2025-10-10T23:20:32.5844328Z info: Microsoft.Azure.WebJobs.Hosting.OptionsLoggingService[0]
+2025-10-10T23:20:32.5844393Z       FunctionResultAggregatorOptions
+2025-10-10T23:20:32.5844451Z       {
+2025-10-10T23:20:32.5844510Z         "BatchSize": 1000,
+2025-10-10T23:20:32.5844572Z         "FlushTimeout": "00:00:30",
+2025-10-10T23:20:32.5844633Z         "IsEnabled": true
+2025-10-10T23:20:32.5844724Z       }
+2025-10-10T23:20:32.5844789Z info: Microsoft.Azure.WebJobs.Hosting.OptionsLoggingService[0]
+2025-10-10T23:20:32.5844850Z       ConcurrencyOptions
+2025-10-10T23:20:32.5844909Z       {
+2025-10-10T23:20:32.5844970Z         "DynamicConcurrencyEnabled": false,
+2025-10-10T23:20:32.5845033Z         "MaximumFunctionConcurrency": 500,
+2025-10-10T23:20:32.5845094Z         "CPUThreshold": 0.8,
+2025-10-10T23:20:32.5845190Z         "SnapshotPersistenceEnabled": true
+2025-10-10T23:20:32.5845251Z       }
+2025-10-10T23:20:32.5845315Z info: Microsoft.Azure.WebJobs.Hosting.OptionsLoggingService[0]
+2025-10-10T23:20:32.5845375Z       SingletonOptions
+2025-10-10T23:20:32.5845433Z       {
+2025-10-10T23:20:32.5845493Z         "LockPeriod": "00:00:15",
+2025-10-10T23:20:32.5845555Z         "ListenerLockPeriod": "00:01:00",
+2025-10-10T23:20:32.5845652Z         "LockAcquisitionTimeout": "10675199.02:48:05.4775807",
+2025-10-10T23:20:32.5845718Z         "LockAcquisitionPollingInterval": "00:00:05",
+2025-10-10T23:20:32.5845783Z         "ListenerLockRecoveryPollingInterval": "00:01:00"
+2025-10-10T23:20:32.5845843Z       }
+2025-10-10T23:20:32.5845905Z info: Microsoft.Azure.WebJobs.Hosting.OptionsLoggingService[0]
+2025-10-10T23:20:32.5845966Z       ScaleOptions
+2025-10-10T23:20:32.5846024Z       {
+2025-10-10T23:20:32.5846118Z         "ScaleMetricsMaxAge": "00:02:00",
+2025-10-10T23:20:32.5846183Z         "ScaleMetricsSampleInterval": "00:00:10",
+2025-10-10T23:20:32.5846245Z         "MetricsPurgeEnabled": true,
+2025-10-10T23:20:32.5846308Z         "IsTargetScalingEnabled": true,
+2025-10-10T23:20:32.5846370Z         "IsRuntimeScalingEnabled": false
+2025-10-10T23:20:32.5846429Z       }
+2025-10-10T23:20:32.5846523Z info: Microsoft.Azure.WebJobs.Hosting.JobHostService[0]
+2025-10-10T23:20:32.5846589Z       Starting JobHost
+2025-10-10T23:20:32.5846649Z info: Host.Startup[401]
+2025-10-10T23:20:32.5846725Z       Starting Host (HostId=func-menu-app-18436, InstanceId=9e0db18d-2f18-4698-a516-217c686329e0, Version=4.1042.100.9, ProcessId=1, AppDomainId=1, InDebugMode=False, InDiagnosticMode=False, FunctionsExtensionVersion=~4)
+2025-10-10T23:20:32.6638141Z info: Host.Startup[314]
+2025-10-10T23:20:32.6638581Z       Loading functions metadata
+2025-10-10T23:21:04.9482061Z info: Host.Startup[326]
+2025-10-10T23:21:04.9482729Z       Reading functions metadata (Custom)
+2025-10-10T23:21:05.1185497Z info: Host.Startup[327]
+2025-10-10T23:21:05.1371770Z       0 functions found (Custom)
+2025-10-10T23:21:05.2368642Z info: Host.Startup[315]
+2025-10-10T23:21:05.2369255Z       2 functions loaded
+2025-10-10T23:21:05.5453594Z info: Host.Startup[0]
+2025-10-10T23:21:05.5454413Z       Generating 2 job function(s)
+2025-10-10T23:21:05.5454510Z info: Microsoft.Azure.WebJobs.Script.Workers.Rpc.RpcFunctionInvocationDispatcher[0]
+2025-10-10T23:21:05.5454581Z       Worker process started and initialized.
+2025-10-10T23:21:06.7824246Z info: Host.Startup[0]
+2025-10-10T23:21:06.7825409Z       Found the following functions:
+2025-10-10T23:21:06.7825514Z       Host.Functions.GetMenu
+2025-10-10T23:21:06.7825580Z       Host.Functions.GetMenuItem
+2025-10-10T23:21:06.7825642Z       
+2025-10-10T23:21:06.8745273Z info: Microsoft.Azure.WebJobs.Script.WebHost.WebScriptHostHttpRoutesManager[0]
+2025-10-10T23:21:06.8745818Z       Initializing function HTTP routes
+2025-10-10T23:21:06.8745907Z       Mapped function route 'api/menu' [get] to 'GetMenu'
+2025-10-10T23:21:06.8746039Z       Mapped function route 'api/menu/{id}' [get] to 'GetMenuItem'
+2025-10-10T23:21:06.8746105Z       
+2025-10-10T23:21:06.9123269Z info: Microsoft.Azure.WebJobs.Hosting.OptionsLoggingService[0]
+2025-10-10T23:21:06.9124007Z       HttpOptions
+2025-10-10T23:21:06.9124100Z       {
+2025-10-10T23:21:06.9124168Z         "DynamicThrottlesEnabled": false,
+2025-10-10T23:21:06.9124233Z         "EnableChunkedRequestBinding": false,
+2025-10-10T23:21:06.9124356Z         "MaxConcurrentRequests": -1,
+2025-10-10T23:21:06.9124423Z         "MaxOutstandingRequests": -1,
+2025-10-10T23:21:06.9124488Z         "RoutePrefix": "api"
+2025-10-10T23:21:06.9124550Z       }
+2025-10-10T23:21:07.0740005Z info: Host.Startup[412]
+2025-10-10T23:21:07.0740820Z       Host initialized (34333ms)
+2025-10-10T23:21:07.1737990Z info: Host.Startup[413]
+2025-10-10T23:21:07.1739044Z       Host started (34625ms)
+2025-10-10T23:21:07.1739131Z info: Host.Startup[0]
+2025-10-10T23:21:07.1739196Z       Job host started
+2025-10-10T23:21:07.4657002Z Hosting environment: Production
+2025-10-10T23:21:07.4763813Z Content root path: /azure-functions-host
+2025-10-10T23:21:07.4763966Z Now listening on: http://[::]:80
+2025-10-10T23:21:07.4764146Z Application started. Press Ctrl+C to shut down.
+2025-10-10T23:21:23.1709177Z info: Host.General[337]
+2025-10-10T23:21:23.1709647Z       Host lock lease acquired by instance ID 'a58ac17e90a47aad03818806040aeb04'.
+2025-10-10T23:21:39.1823939Z info: Microsoft.Azure.WebJobs.Hosting.OptionsLoggingService[0]
+2025-10-10T23:21:39.1824402Z       HttpOptions
+2025-10-10T23:21:39.1824460Z       {
+2025-10-10T23:21:39.1824514Z         "DynamicThrottlesEnabled": false,
+2025-10-10T23:21:39.1826063Z         "EnableChunkedRequestBinding": false,
+2025-10-10T23:21:39.1826158Z         "MaxConcurrentRequests": -1,
+2025-10-10T23:21:39.1826210Z         "MaxOutstandingRequests": -1,
+2025-10-10T23:21:39.1826263Z         "RoutePrefix": "api"
+2025-10-10T23:21:39.1826313Z       }
+2025-10-10T23:21:39.1826788Z info: Microsoft.Azure.WebJobs.Hosting.OptionsLoggingService[0]
+2025-10-10T23:21:39.1826849Z       ConcurrencyOptions
+2025-10-10T23:21:39.1826939Z       {
+2025-10-10T23:21:39.1826994Z         "DynamicConcurrencyEnabled": false,
+2025-10-10T23:21:39.1827045Z         "MaximumFunctionConcurrency": 500,
+2025-10-10T23:21:39.1827096Z         "CPUThreshold": 0.8,
+2025-10-10T23:21:39.1827145Z         "SnapshotPersistenceEnabled": true
+2025-10-10T23:21:39.1827193Z       }

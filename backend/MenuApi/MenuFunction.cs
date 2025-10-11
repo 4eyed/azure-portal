@@ -36,17 +36,22 @@ public class MenuFunction
             var userId = req.Query["user"] ?? "alice";
             _logger.LogInformation($"Processing request for user: {userId}");
 
-        // Fetch menu items from database if available, otherwise use default
-        var menuItems = _dbContext != null
-            ? await _dbContext.MenuItems.ToListAsync()
-            : new List<Models.MenuItem>
+            // Fetch menu items from database - REQUIRED
+            if (_dbContext == null)
             {
-                new() { Id = 1, Name = "Dashboard", Icon = "📊", Url = "/dashboard" },
-                new() { Id = 2, Name = "Users", Icon = "👥", Url = "/users" },
-                new() { Id = 3, Name = "Settings", Icon = "⚙️", Url = "/settings" },
-                new() { Id = 4, Name = "Reports", Icon = "📈", Url = "/reports" }
-            };
+                _logger.LogError("❌ Database context is not configured. DOTNET_CONNECTION_STRING must be set.");
+                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                errorResponse.Headers.Add("Content-Type", "application/json");
+                errorResponse.Headers.Add("Access-Control-Allow-Origin", "*");
+                await errorResponse.WriteStringAsync(JsonSerializer.Serialize(new
+                {
+                    error = "Database not configured",
+                    message = "DOTNET_CONNECTION_STRING environment variable is required"
+                }));
+                return errorResponse;
+            }
 
+            var menuItems = await _dbContext.MenuItems.ToListAsync();
             _logger.LogInformation($"Found {menuItems.Count} menu items to check");
 
             var accessibleItems = new List<object>();

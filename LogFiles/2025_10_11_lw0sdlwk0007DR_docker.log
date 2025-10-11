@@ -1,0 +1,271 @@
+2025-10-11T00:32:33.9976952Z Container start method called.
+2025-10-11T00:32:34.0185183Z Establishing network.
+2025-10-11T00:32:34.0372204Z Pulling image: acrmenuapp768.azurecr.io/menu-app-combined:latest.
+2025-10-11T00:32:40.8588185Z Container is starting.
+2025-10-11T00:32:40.8592383Z Establishing user namespace if not established already.
+2025-10-11T00:32:40.8594114Z Establishing network if not established already.
+2025-10-11T00:32:40.8595831Z Mounting volumes.
+2025-10-11T00:32:40.9705505Z Nested mountpoint volatile/logs
+2025-10-11T00:32:41.0702618Z Nested mountpoint 
+2025-10-11T00:32:41.9490892Z Nested mountpoint 
+2025-10-11T00:32:42.2801278Z Nested mountpoint 
+2025-10-11T00:32:43.1386967Z Creating container.
+2025-10-11T00:32:43.1388831Z Creating pipes for streaming container io.
+2025-10-11T00:32:43.1390655Z Creating stdout named pipe at /podr/container/pipe/c35bdbaf40ab_func-menu-app-18436/stdout_97982278cf9c4ab7b423d05a4fce2bb5.
+2025-10-11T00:32:43.1997699Z Successfully created stdout named pipe at: /podr/container/pipe/c35bdbaf40ab_func-menu-app-18436/stdout_97982278cf9c4ab7b423d05a4fce2bb5.
+2025-10-11T00:32:43.2001500Z Opening named pipe /podr/container/pipe/c35bdbaf40ab_func-menu-app-18436/stdout_97982278cf9c4ab7b423d05a4fce2bb5 for reading in non-blocking mode.
+2025-10-11T00:32:43.2003937Z Successfully opened named pipe: /podr/container/pipe/c35bdbaf40ab_func-menu-app-18436/stdout_97982278cf9c4ab7b423d05a4fce2bb5.
+2025-10-11T00:32:43.2371483Z Successfully removed non-blocking flag from /podr/container/pipe/c35bdbaf40ab_func-menu-app-18436/stdout_97982278cf9c4ab7b423d05a4fce2bb5.
+2025-10-11T00:32:43.2687338Z Creating stderr named pipe at /podr/container/pipe/c35bdbaf40ab_func-menu-app-18436/stderr_7518301da58c43f4985fabaf92ddd1e2.
+2025-10-11T00:32:43.2705388Z Successfully created stderr named pipe at: /podr/container/pipe/c35bdbaf40ab_func-menu-app-18436/stderr_7518301da58c43f4985fabaf92ddd1e2.
+2025-10-11T00:32:43.3896746Z Opening named pipe /podr/container/pipe/c35bdbaf40ab_func-menu-app-18436/stderr_7518301da58c43f4985fabaf92ddd1e2 for reading in non-blocking mode.
+2025-10-11T00:32:43.3984896Z Successfully opened named pipe: /podr/container/pipe/c35bdbaf40ab_func-menu-app-18436/stderr_7518301da58c43f4985fabaf92ddd1e2.
+2025-10-11T00:32:43.4008088Z Successfully removed non-blocking flag from /podr/container/pipe/c35bdbaf40ab_func-menu-app-18436/stderr_7518301da58c43f4985fabaf92ddd1e2.
+2025-10-11T00:32:43.4766260Z Creating container with image: acrmenuapp768.azurecr.io/menu-app-combined:latest from registry: acrmenuapp768.azurecr.io and fully qualified image name: acrmenuapp768.azurecr.io/menu-app-combined:latest
+2025-10-11T00:32:49.6015164Z Starting container: c35bdbaf40ab_func-menu-app-18436.
+2025-10-11T00:32:50.3248292Z Starting watchers and probes.
+2025-10-11T00:32:50.4027220Z Starting metrics collection.
+2025-10-11T00:32:50.5457684Z Container is running.
+2025-10-11T00:32:51.3127100Z Container start method finished after 17263 ms.
+2025-10-11T00:34:25.4087239Z Site startup probe succeeded after 93.8493613 seconds.
+2025-10-11T00:34:43.0682098Z Site started.
+2025-10-11T00:35:04.5583439Z Container is terminating. Grace period: 5 seconds.
+2025-10-11T00:35:05.0147483Z Stop and delete container. Retry count = 0
+2025-10-11T00:35:05.0160733Z Stopping container: f646b2f2af6d_func-menu-app-18436.
+2025-10-11T00:35:11.1800807Z Deleting container: f646b2f2af6d_func-menu-app-18436. Retry count = 0
+2025-10-11T00:35:11.9212312Z Container spec TerminationMessagePolicy  path 
+2025-10-11T00:35:11.9408606Z Container is terminated. Total time elapsed: 7380 ms.
+2025-10-11T00:35:11.9515586Z Site: func-menu-app-18436 stopped.
+2025-10-11T00:40:53.0604864Z Container start method called.
+2025-10-11T00:40:53.0703569Z Establishing network.
+2025-10-11T00:40:53.0706967Z Pulling image: acrmenuapp768.azurecr.io/menu-app-combined:latest.
+2025-10-11T00:40:55.3074160Z Image acrmenuapp768.azurecr.io/menu-app-combined:latest is pulled from registry acrmenuapp768.azurecr.io
+2025-10-11T00:40:55.3076413Z Container is starting.
+2025-10-11T00:40:55.3079458Z Establishing user namespace if not established already.
+2025-10-11T00:40:55.3080950Z Establishing network if not established already.
+2025-10-11T00:40:55.3082528Z Mounting volumes.
+2025-10-11T00:40:55.3084816Z Nested mountpoint volatile/logs
+2025-10-11T00:40:55.3668228Z Nested mountpoint 
+2025-10-11T00:40:55.4977155Z Nested mountpoint 
+2025-10-11T00:40:55.5769513Z Nested mountpoint 
+2025-10-11T00:40:56.0686303Z Creating container.
+2025-10-11T00:40:56.0702472Z Creating pipes for streaming container io.
+2025-10-11T00:40:56.0708776Z Creating stdout named pipe at /podr/container/pipe/f7c83c48cec9_func-menu-app-18436/stdout_8ce2129b32f546cd9c81ea658f0ccc63.
+2025-10-11T00:40:56.1611120Z Successfully created stdout named pipe at: /podr/container/pipe/f7c83c48cec9_func-menu-app-18436/stdout_8ce2129b32f546cd9c81ea658f0ccc63.
+2025-10-11T00:40:56.1704413Z Opening named pipe /podr/container/pipe/f7c83c48cec9_func-menu-app-18436/stdout_8ce2129b32f546cd9c81ea658f0ccc63 for reading in non-blocking mode.
+2025-10-11T00:40:56.1790364Z Successfully opened named pipe: /podr/container/pipe/f7c83c48cec9_func-menu-app-18436/stdout_8ce2129b32f546cd9c81ea658f0ccc63.
+2025-10-11T00:40:56.1803124Z Successfully removed non-blocking flag from /podr/container/pipe/f7c83c48cec9_func-menu-app-18436/stdout_8ce2129b32f546cd9c81ea658f0ccc63.
+2025-10-11T00:40:56.1897011Z Creating stderr named pipe at /podr/container/pipe/f7c83c48cec9_func-menu-app-18436/stderr_3c2d461f76464322a4d1486db7f52923.
+2025-10-11T00:40:56.1912682Z Successfully created stderr named pipe at: /podr/container/pipe/f7c83c48cec9_func-menu-app-18436/stderr_3c2d461f76464322a4d1486db7f52923.
+2025-10-11T00:40:56.1916746Z Opening named pipe /podr/container/pipe/f7c83c48cec9_func-menu-app-18436/stderr_3c2d461f76464322a4d1486db7f52923 for reading in non-blocking mode.
+2025-10-11T00:40:56.1920008Z Successfully opened named pipe: /podr/container/pipe/f7c83c48cec9_func-menu-app-18436/stderr_3c2d461f76464322a4d1486db7f52923.
+2025-10-11T00:40:56.1922455Z Successfully removed non-blocking flag from /podr/container/pipe/f7c83c48cec9_func-menu-app-18436/stderr_3c2d461f76464322a4d1486db7f52923.
+2025-10-11T00:40:56.2002027Z Creating container with image: acrmenuapp768.azurecr.io/menu-app-combined:latest from registry: acrmenuapp768.azurecr.io and fully qualified image name: acrmenuapp768.azurecr.io/menu-app-combined:latest
+2025-10-11T00:40:58.9235790Z Starting container: f7c83c48cec9_func-menu-app-18436.
+2025-10-11T00:40:59.2602275Z Starting watchers and probes.
+2025-10-11T00:40:59.2681601Z Starting metrics collection.
+2025-10-11T00:40:59.2692680Z Container is running.
+2025-10-11T00:41:00.1327923Z Container start method finished after 7071 ms.
+2025-10-11T00:42:36.3819482Z Site startup probe succeeded after 96.1332329 seconds.
+2025-10-11T00:43:04.4477032Z Failed to start site. Revert by stopping site.
+2025-10-11T00:43:05.0867248Z Container is terminating. Grace period: 5 seconds.
+2025-10-11T00:43:09.1313478Z Stop and delete container. Retry count = 0
+2025-10-11T00:43:09.2404818Z Stopping container: f7c83c48cec9_func-menu-app-18436.
+2025-10-11T00:43:14.2253886Z Deleting container: f7c83c48cec9_func-menu-app-18436. Retry count = 0
+2025-10-11T00:43:15.6551314Z Container spec TerminationMessagePolicy  path 
+2025-10-11T00:43:15.7042758Z Container is terminated. Total time elapsed: 10541 ms.
+2025-10-11T00:43:15.7336645Z Site container: func-menu-app-18436 terminated during site startup.
+2025-10-11T00:43:15.7531658Z Site: func-menu-app-18436 stopped.
+2025-10-11T00:43:45.1677307Z Container is terminating. Grace period: 5 seconds.
+2025-10-11T00:43:45.2981389Z Stop and delete container. Retry count = 0
+2025-10-11T00:43:45.2984612Z Stopping container: c35bdbaf40ab_func-menu-app-18436.
+2025-10-11T00:43:50.8692430Z Deleting container: c35bdbaf40ab_func-menu-app-18436. Retry count = 0
+2025-10-11T00:43:51.4785618Z Container spec TerminationMessagePolicy  path 
+2025-10-11T00:43:51.4788093Z Container is terminated. Total time elapsed: 6310 ms.
+2025-10-11T00:43:51.4788651Z Site: func-menu-app-18436 stopped.
+2025-10-11T00:44:25.0958780Z Container start method called.
+2025-10-11T00:44:25.0968036Z Establishing network.
+2025-10-11T00:44:25.0970161Z Pulling image: acrmenuapp768.azurecr.io/menu-app-combined:latest.
+2025-10-11T00:44:25.8455177Z Container is starting.
+2025-10-11T00:44:25.8657868Z Establishing user namespace if not established already.
+2025-10-11T00:44:25.8665951Z Establishing network if not established already.
+2025-10-11T00:44:25.8668836Z Mounting volumes.
+2025-10-11T00:44:25.8683220Z Nested mountpoint volatile/logs
+2025-10-11T00:44:25.9678482Z Nested mountpoint 
+2025-10-11T00:44:26.1929785Z Nested mountpoint 
+2025-10-11T00:44:26.2456116Z Nested mountpoint 
+2025-10-11T00:44:26.4949292Z Creating container.
+2025-10-11T00:44:26.5038776Z Creating pipes for streaming container io.
+2025-10-11T00:44:26.5042029Z Creating stdout named pipe at /podr/container/pipe/21fd70a811ea_func-menu-app-18436/stdout_98b56297c7f6491ab2ba42463bb566e3.
+2025-10-11T00:44:26.5125624Z Successfully created stdout named pipe at: /podr/container/pipe/21fd70a811ea_func-menu-app-18436/stdout_98b56297c7f6491ab2ba42463bb566e3.
+2025-10-11T00:44:26.5128475Z Opening named pipe /podr/container/pipe/21fd70a811ea_func-menu-app-18436/stdout_98b56297c7f6491ab2ba42463bb566e3 for reading in non-blocking mode.
+2025-10-11T00:44:26.5148466Z Successfully opened named pipe: /podr/container/pipe/21fd70a811ea_func-menu-app-18436/stdout_98b56297c7f6491ab2ba42463bb566e3.
+2025-10-11T00:44:26.5152167Z Successfully removed non-blocking flag from /podr/container/pipe/21fd70a811ea_func-menu-app-18436/stdout_98b56297c7f6491ab2ba42463bb566e3.
+2025-10-11T00:44:26.5226503Z Creating stderr named pipe at /podr/container/pipe/21fd70a811ea_func-menu-app-18436/stderr_d3979dae14cf4714a1c553d761c51f0a.
+2025-10-11T00:44:26.5244971Z Successfully created stderr named pipe at: /podr/container/pipe/21fd70a811ea_func-menu-app-18436/stderr_d3979dae14cf4714a1c553d761c51f0a.
+2025-10-11T00:44:26.5352797Z Opening named pipe /podr/container/pipe/21fd70a811ea_func-menu-app-18436/stderr_d3979dae14cf4714a1c553d761c51f0a for reading in non-blocking mode.
+2025-10-11T00:44:26.5430745Z Successfully opened named pipe: /podr/container/pipe/21fd70a811ea_func-menu-app-18436/stderr_d3979dae14cf4714a1c553d761c51f0a.
+2025-10-11T00:44:26.5440299Z Successfully removed non-blocking flag from /podr/container/pipe/21fd70a811ea_func-menu-app-18436/stderr_d3979dae14cf4714a1c553d761c51f0a.
+2025-10-11T00:44:26.5447869Z Creating container with image: acrmenuapp768.azurecr.io/menu-app-combined:latest from registry: acrmenuapp768.azurecr.io and fully qualified image name: acrmenuapp768.azurecr.io/menu-app-combined:latest
+2025-10-11T00:44:29.0599786Z Starting container: 21fd70a811ea_func-menu-app-18436.
+2025-10-11T00:44:30.3489436Z Starting watchers and probes.
+2025-10-11T00:44:30.3565097Z Starting metrics collection.
+2025-10-11T00:44:30.3568976Z Container is running.
+2025-10-11T00:44:30.9574392Z Container start method finished after 5860 ms.
+2025-10-11T00:45:01.8948983Z Site startup probe succeeded after 30.8074802 seconds.
+2025-10-11T00:45:13.7441744Z Site started.
+2025-10-11T01:03:37.6119148Z Container start method called.
+2025-10-11T01:03:37.6430646Z Establishing network.
+2025-10-11T01:03:37.8452416Z Pulling image: acrmenuapp768.azurecr.io/menu-app-combined:latest.
+2025-10-11T01:03:41.2753018Z Container is starting.
+2025-10-11T01:03:41.2831111Z Establishing user namespace if not established already.
+2025-10-11T01:03:41.2914429Z Establishing network if not established already.
+2025-10-11T01:03:41.2916728Z Mounting volumes.
+2025-10-11T01:03:41.3011320Z Nested mountpoint volatile/logs
+2025-10-11T01:03:41.3902140Z Nested mountpoint 
+2025-10-11T01:03:41.5501464Z Nested mountpoint 
+2025-10-11T01:03:42.0516451Z Nested mountpoint 
+2025-10-11T01:03:42.4483201Z Creating container.
+2025-10-11T01:03:42.4484999Z Creating pipes for streaming container io.
+2025-10-11T01:03:42.4486498Z Creating stdout named pipe at /podr/container/pipe/b092e99b464b_func-menu-app-18436/stdout_621fec6932fd43e18f8e8593b61df40d.
+2025-10-11T01:03:42.4872166Z Successfully created stdout named pipe at: /podr/container/pipe/b092e99b464b_func-menu-app-18436/stdout_621fec6932fd43e18f8e8593b61df40d.
+2025-10-11T01:03:42.4876456Z Opening named pipe /podr/container/pipe/b092e99b464b_func-menu-app-18436/stdout_621fec6932fd43e18f8e8593b61df40d for reading in non-blocking mode.
+2025-10-11T01:03:42.4894210Z Successfully opened named pipe: /podr/container/pipe/b092e99b464b_func-menu-app-18436/stdout_621fec6932fd43e18f8e8593b61df40d.
+2025-10-11T01:03:42.5076400Z Successfully removed non-blocking flag from /podr/container/pipe/b092e99b464b_func-menu-app-18436/stdout_621fec6932fd43e18f8e8593b61df40d.
+2025-10-11T01:03:42.5374664Z Creating stderr named pipe at /podr/container/pipe/b092e99b464b_func-menu-app-18436/stderr_5a8fe39becbc4da595c7ed65100d3d73.
+2025-10-11T01:03:42.5772810Z Successfully created stderr named pipe at: /podr/container/pipe/b092e99b464b_func-menu-app-18436/stderr_5a8fe39becbc4da595c7ed65100d3d73.
+2025-10-11T01:03:42.5776274Z Opening named pipe /podr/container/pipe/b092e99b464b_func-menu-app-18436/stderr_5a8fe39becbc4da595c7ed65100d3d73 for reading in non-blocking mode.
+2025-10-11T01:03:42.6289908Z Successfully opened named pipe: /podr/container/pipe/b092e99b464b_func-menu-app-18436/stderr_5a8fe39becbc4da595c7ed65100d3d73.
+2025-10-11T01:03:42.6477945Z Successfully removed non-blocking flag from /podr/container/pipe/b092e99b464b_func-menu-app-18436/stderr_5a8fe39becbc4da595c7ed65100d3d73.
+2025-10-11T01:03:42.6861217Z Creating container with image: acrmenuapp768.azurecr.io/menu-app-combined:latest from registry: acrmenuapp768.azurecr.io and fully qualified image name: acrmenuapp768.azurecr.io/menu-app-combined:latest
+2025-10-11T01:03:44.7645334Z Starting container: b092e99b464b_func-menu-app-18436.
+2025-10-11T01:03:45.3311404Z Starting watchers and probes.
+2025-10-11T01:03:45.3527529Z Starting metrics collection.
+2025-10-11T01:03:45.3741574Z Container is running.
+2025-10-11T01:03:46.3635685Z Container start method finished after 8554 ms.
+2025-10-11T01:04:34.3002231Z Site startup probe failed after 47.8785366 seconds.
+2025-10-11T01:04:34.7478003Z Failed to start site. Revert by stopping site.
+2025-10-11T01:04:34.8459538Z Container is terminating. Grace period: 5 seconds.
+2025-10-11T01:04:35.3818770Z Stop and delete container. Retry count = 0
+2025-10-11T01:04:35.3834608Z Stopping container: b092e99b464b_func-menu-app-18436.
+2025-10-11T01:04:40.6597747Z Deleting container: b092e99b464b_func-menu-app-18436. Retry count = 0
+2025-10-11T01:04:41.3608128Z Container spec TerminationMessagePolicy  path 
+2025-10-11T01:04:41.3783410Z Container is terminated. Total time elapsed: 6518 ms.
+2025-10-11T01:04:41.3870952Z Site container: func-menu-app-18436 terminated during site startup.
+2025-10-11T01:04:41.3968163Z Site: func-menu-app-18436 stopped.
+2025-10-11T01:05:04.9453343Z Container is terminating. Grace period: 5 seconds.
+2025-10-11T01:05:04.9870030Z Stop and delete container. Retry count = 0
+2025-10-11T01:05:04.9951716Z Stopping container: 21fd70a811ea_func-menu-app-18436.
+2025-10-11T01:05:10.6777539Z Deleting container: 21fd70a811ea_func-menu-app-18436. Retry count = 0
+2025-10-11T01:05:11.3374736Z Container spec TerminationMessagePolicy  path 
+2025-10-11T01:05:11.3404065Z Container is terminated. Total time elapsed: 6394 ms.
+2025-10-11T01:05:11.3502994Z Site: func-menu-app-18436 stopped.
+2025-10-11T01:05:43.0975334Z Container start method called.
+2025-10-11T01:05:43.1002269Z Establishing network.
+2025-10-11T01:05:43.1010694Z Pulling image: acrmenuapp768.azurecr.io/menu-app-combined:latest.
+2025-10-11T01:05:43.7931987Z Container is starting.
+2025-10-11T01:05:43.8152888Z Establishing user namespace if not established already.
+2025-10-11T01:05:43.8156037Z Establishing network if not established already.
+2025-10-11T01:05:43.8158946Z Mounting volumes.
+2025-10-11T01:05:43.8161348Z Nested mountpoint volatile/logs
+2025-10-11T01:05:43.8532243Z Nested mountpoint 
+2025-10-11T01:05:44.0303302Z Nested mountpoint 
+2025-10-11T01:05:44.1703328Z Nested mountpoint 
+2025-10-11T01:05:44.3129458Z Creating container.
+2025-10-11T01:05:44.3610935Z Creating pipes for streaming container io.
+2025-10-11T01:05:44.4273924Z Creating stdout named pipe at /podr/container/pipe/81aad030f8a8_func-menu-app-18436/stdout_a2d06ab2d85646dd9fb6f84875191fd8.
+2025-10-11T01:05:44.4396173Z Successfully created stdout named pipe at: /podr/container/pipe/81aad030f8a8_func-menu-app-18436/stdout_a2d06ab2d85646dd9fb6f84875191fd8.
+2025-10-11T01:05:44.4508642Z Opening named pipe /podr/container/pipe/81aad030f8a8_func-menu-app-18436/stdout_a2d06ab2d85646dd9fb6f84875191fd8 for reading in non-blocking mode.
+2025-10-11T01:05:44.4607330Z Successfully opened named pipe: /podr/container/pipe/81aad030f8a8_func-menu-app-18436/stdout_a2d06ab2d85646dd9fb6f84875191fd8.
+2025-10-11T01:05:44.4673302Z Successfully removed non-blocking flag from /podr/container/pipe/81aad030f8a8_func-menu-app-18436/stdout_a2d06ab2d85646dd9fb6f84875191fd8.
+2025-10-11T01:05:44.4676847Z Creating stderr named pipe at /podr/container/pipe/81aad030f8a8_func-menu-app-18436/stderr_7562ddcbb3ae4cc0bda87f48fc38d605.
+2025-10-11T01:05:44.4680147Z Successfully created stderr named pipe at: /podr/container/pipe/81aad030f8a8_func-menu-app-18436/stderr_7562ddcbb3ae4cc0bda87f48fc38d605.
+2025-10-11T01:05:44.4681868Z Opening named pipe /podr/container/pipe/81aad030f8a8_func-menu-app-18436/stderr_7562ddcbb3ae4cc0bda87f48fc38d605 for reading in non-blocking mode.
+2025-10-11T01:05:44.4683734Z Successfully opened named pipe: /podr/container/pipe/81aad030f8a8_func-menu-app-18436/stderr_7562ddcbb3ae4cc0bda87f48fc38d605.
+2025-10-11T01:05:44.4685229Z Successfully removed non-blocking flag from /podr/container/pipe/81aad030f8a8_func-menu-app-18436/stderr_7562ddcbb3ae4cc0bda87f48fc38d605.
+2025-10-11T01:05:44.4686949Z Creating container with image: acrmenuapp768.azurecr.io/menu-app-combined:latest from registry: acrmenuapp768.azurecr.io and fully qualified image name: acrmenuapp768.azurecr.io/menu-app-combined:latest
+2025-10-11T01:05:45.4562450Z Starting container: 81aad030f8a8_func-menu-app-18436.
+2025-10-11T01:05:45.6330704Z Starting watchers and probes.
+2025-10-11T01:05:45.6336584Z Starting metrics collection.
+2025-10-11T01:05:45.6344617Z Container is running.
+2025-10-11T01:05:46.9163960Z Container start method finished after 3818 ms.
+2025-10-11T01:06:15.2994929Z Site startup probe succeeded after 28.3431255 seconds.
+2025-10-11T01:06:28.2117119Z Site started.
+2025-10-11T01:24:31.4238178Z Container start method called.
+2025-10-11T01:24:31.4247704Z Establishing network.
+2025-10-11T01:24:31.4249888Z Pulling image: acrmenuapp768.azurecr.io/menu-app-combined:latest.
+2025-10-11T01:24:50.7049319Z Image acrmenuapp768.azurecr.io/menu-app-combined:latest is pulled from registry acrmenuapp768.azurecr.io
+2025-10-11T01:24:50.7053180Z Container is starting.
+2025-10-11T01:24:50.7059899Z Establishing user namespace if not established already.
+2025-10-11T01:24:50.7062723Z Establishing network if not established already.
+2025-10-11T01:24:50.7064898Z Mounting volumes.
+2025-10-11T01:24:50.7070599Z Nested mountpoint volatile/logs
+2025-10-11T01:24:50.7970328Z Nested mountpoint 
+2025-10-11T01:24:50.9952873Z Nested mountpoint 
+2025-10-11T01:24:51.0952358Z Nested mountpoint 
+2025-10-11T01:24:51.8318517Z Creating container.
+2025-10-11T01:24:51.8321631Z Creating pipes for streaming container io.
+2025-10-11T01:24:51.9021975Z Creating stdout named pipe at /podr/container/pipe/8cd7b43f92b7_func-menu-app-18436/stdout_1d2d0948d92a4fb69936346133c5f7a2.
+2025-10-11T01:24:51.9029008Z Successfully created stdout named pipe at: /podr/container/pipe/8cd7b43f92b7_func-menu-app-18436/stdout_1d2d0948d92a4fb69936346133c5f7a2.
+2025-10-11T01:24:51.9038304Z Opening named pipe /podr/container/pipe/8cd7b43f92b7_func-menu-app-18436/stdout_1d2d0948d92a4fb69936346133c5f7a2 for reading in non-blocking mode.
+2025-10-11T01:24:51.9041597Z Successfully opened named pipe: /podr/container/pipe/8cd7b43f92b7_func-menu-app-18436/stdout_1d2d0948d92a4fb69936346133c5f7a2.
+2025-10-11T01:24:51.9162953Z Successfully removed non-blocking flag from /podr/container/pipe/8cd7b43f92b7_func-menu-app-18436/stdout_1d2d0948d92a4fb69936346133c5f7a2.
+2025-10-11T01:24:51.9412801Z Creating stderr named pipe at /podr/container/pipe/8cd7b43f92b7_func-menu-app-18436/stderr_9cc77a6c2f4947c89160ffc1f9148943.
+2025-10-11T01:24:51.9723586Z Successfully created stderr named pipe at: /podr/container/pipe/8cd7b43f92b7_func-menu-app-18436/stderr_9cc77a6c2f4947c89160ffc1f9148943.
+2025-10-11T01:24:51.9731046Z Opening named pipe /podr/container/pipe/8cd7b43f92b7_func-menu-app-18436/stderr_9cc77a6c2f4947c89160ffc1f9148943 for reading in non-blocking mode.
+2025-10-11T01:24:51.9744028Z Successfully opened named pipe: /podr/container/pipe/8cd7b43f92b7_func-menu-app-18436/stderr_9cc77a6c2f4947c89160ffc1f9148943.
+2025-10-11T01:24:51.9813142Z Successfully removed non-blocking flag from /podr/container/pipe/8cd7b43f92b7_func-menu-app-18436/stderr_9cc77a6c2f4947c89160ffc1f9148943.
+2025-10-11T01:24:51.9837875Z Creating container with image: acrmenuapp768.azurecr.io/menu-app-combined:latest from registry: acrmenuapp768.azurecr.io and fully qualified image name: acrmenuapp768.azurecr.io/menu-app-combined:latest
+2025-10-11T01:24:56.1140916Z Starting container: 8cd7b43f92b7_func-menu-app-18436.
+2025-10-11T01:24:56.5133292Z Starting watchers and probes.
+2025-10-11T01:24:56.5515338Z Starting metrics collection.
+2025-10-11T01:24:56.5519219Z Container is running.
+2025-10-11T01:24:57.6170492Z Container start method finished after 26192 ms.
+2025-10-11T01:25:10.6446056Z Site startup probe failed after 12.1535185 seconds.
+2025-10-11T01:25:11.0542828Z Failed to start site. Revert by stopping site.
+2025-10-11T01:25:11.1246098Z Container is terminating. Grace period: 5 seconds.
+2025-10-11T01:25:11.4020056Z Stop and delete container. Retry count = 0
+2025-10-11T01:25:11.4029830Z Stopping container: 8cd7b43f92b7_func-menu-app-18436.
+2025-10-11T01:25:17.8585711Z Deleting container: 8cd7b43f92b7_func-menu-app-18436. Retry count = 0
+2025-10-11T01:25:18.4842094Z Container spec TerminationMessagePolicy  path 
+2025-10-11T01:25:18.4946560Z Container is terminated. Total time elapsed: 7354 ms.
+2025-10-11T01:25:18.5055424Z Site container: func-menu-app-18436 terminated during site startup.
+2025-10-11T01:25:18.5164473Z Site: func-menu-app-18436 stopped.
+2025-10-11T01:25:42.4185451Z Container is terminating. Grace period: 5 seconds.
+2025-10-11T01:25:42.5083988Z Stop and delete container. Retry count = 0
+2025-10-11T01:25:42.5090119Z Stopping container: 81aad030f8a8_func-menu-app-18436.
+2025-10-11T01:25:48.0033242Z Deleting container: 81aad030f8a8_func-menu-app-18436. Retry count = 0
+2025-10-11T01:25:48.7687057Z Container spec TerminationMessagePolicy  path 
+2025-10-11T01:25:48.7806303Z Container is terminated. Total time elapsed: 6360 ms.
+2025-10-11T01:25:48.7807240Z Site: func-menu-app-18436 stopped.
+2025-10-11T01:26:19.4283762Z Container start method called.
+2025-10-11T01:26:19.4288094Z Establishing network.
+2025-10-11T01:26:19.4290835Z Pulling image: acrmenuapp768.azurecr.io/menu-app-combined:latest.
+2025-10-11T01:26:20.2126628Z Container is starting.
+2025-10-11T01:26:20.2322831Z Establishing user namespace if not established already.
+2025-10-11T01:26:20.2325761Z Establishing network if not established already.
+2025-10-11T01:26:20.2327479Z Mounting volumes.
+2025-10-11T01:26:20.2404622Z Nested mountpoint volatile/logs
+2025-10-11T01:26:20.2723591Z Nested mountpoint 
+2025-10-11T01:26:20.3493107Z Nested mountpoint 
+2025-10-11T01:26:20.5092252Z Nested mountpoint 
+2025-10-11T01:26:20.6804978Z Creating container.
+2025-10-11T01:26:20.6807622Z Creating pipes for streaming container io.
+2025-10-11T01:26:20.6809335Z Creating stdout named pipe at /podr/container/pipe/1f363716807c_func-menu-app-18436/stdout_a45bde27235e453c9ece90eeba4f7d41.
+2025-10-11T01:26:20.6812833Z Successfully created stdout named pipe at: /podr/container/pipe/1f363716807c_func-menu-app-18436/stdout_a45bde27235e453c9ece90eeba4f7d41.
+2025-10-11T01:26:20.6814326Z Opening named pipe /podr/container/pipe/1f363716807c_func-menu-app-18436/stdout_a45bde27235e453c9ece90eeba4f7d41 for reading in non-blocking mode.
+2025-10-11T01:26:20.6816269Z Successfully opened named pipe: /podr/container/pipe/1f363716807c_func-menu-app-18436/stdout_a45bde27235e453c9ece90eeba4f7d41.
+2025-10-11T01:26:20.6817745Z Successfully removed non-blocking flag from /podr/container/pipe/1f363716807c_func-menu-app-18436/stdout_a45bde27235e453c9ece90eeba4f7d41.
+2025-10-11T01:26:20.6884152Z Creating stderr named pipe at /podr/container/pipe/1f363716807c_func-menu-app-18436/stderr_847e53ae197b4997b98a3e74755edb7c.
+2025-10-11T01:26:20.6889120Z Successfully created stderr named pipe at: /podr/container/pipe/1f363716807c_func-menu-app-18436/stderr_847e53ae197b4997b98a3e74755edb7c.
+2025-10-11T01:26:20.6892312Z Opening named pipe /podr/container/pipe/1f363716807c_func-menu-app-18436/stderr_847e53ae197b4997b98a3e74755edb7c for reading in non-blocking mode.
+2025-10-11T01:26:20.6894413Z Successfully opened named pipe: /podr/container/pipe/1f363716807c_func-menu-app-18436/stderr_847e53ae197b4997b98a3e74755edb7c.
+2025-10-11T01:26:20.6896052Z Successfully removed non-blocking flag from /podr/container/pipe/1f363716807c_func-menu-app-18436/stderr_847e53ae197b4997b98a3e74755edb7c.
+2025-10-11T01:26:20.6911439Z Creating container with image: acrmenuapp768.azurecr.io/menu-app-combined:latest from registry: acrmenuapp768.azurecr.io and fully qualified image name: acrmenuapp768.azurecr.io/menu-app-combined:latest
+2025-10-11T01:26:21.8763787Z Starting container: 1f363716807c_func-menu-app-18436.
+2025-10-11T01:26:22.1537918Z Starting watchers and probes.
+2025-10-11T01:26:22.1552112Z Starting metrics collection.
+2025-10-11T01:26:22.1558240Z Container is running.
+2025-10-11T01:26:23.1508866Z Container start method finished after 3722 ms.
+2025-10-11T01:27:02.1549208Z Site startup probe succeeded after 38.9441741 seconds.
+2025-10-11T01:27:16.8027024Z Site started.
