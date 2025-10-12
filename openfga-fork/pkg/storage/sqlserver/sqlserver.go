@@ -11,6 +11,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/cenkalti/backoff/v4"
 	mssql "github.com/microsoft/go-mssqldb"
+	"github.com/microsoft/go-mssqldb/azuread"
 	"github.com/microsoft/go-mssqldb/msdsn"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
@@ -55,9 +56,19 @@ func New(uri string, cfg *sqlcommon.Config) (*Datastore, error) {
 	// SQL Server connection string format:
 	// sqlserver://username:password@host:port?database=dbname&encrypt=true
 	// Azure SQL: sqlserver://username:password@server.database.windows.net:1433?database=dbname&encrypt=true
+	// Azure SQL with Managed Identity: sqlserver://server.database.windows.net?database=dbname&fedauth=ActiveDirectoryMSI
 
-	if cfg.Username != "" || cfg.Password != "" {
-		// Parse connection string
+	// Determine if we should use Azure AD authentication
+	driverName := "sqlserver"
+	useManagedIdentity := strings.Contains(uri, "fedauth=ActiveDirectoryMSI") ||
+		strings.Contains(uri, "fedauth=ActiveDirectoryManagedIdentity") ||
+		strings.Contains(uri, "fedauth=ActiveDirectoryDefault")
+
+	if useManagedIdentity {
+		// Use azuread driver for managed identity authentication
+		driverName = azuread.DriverName
+	} else if cfg.Username != "" || cfg.Password != "" {
+		// Parse connection string for legacy password-based auth
 		connCfg, err := msdsn.Parse(uri)
 		if err != nil {
 			return nil, fmt.Errorf("parse sqlserver connection string: %w", err)
@@ -75,7 +86,7 @@ func New(uri string, cfg *sqlcommon.Config) (*Datastore, error) {
 		uri = connCfg.URL().String()
 	}
 
-	db, err := sql.Open("sqlserver", uri)
+	db, err := sql.Open(driverName, uri)
 	if err != nil {
 		return nil, fmt.Errorf("initialize sqlserver connection: %w", err)
 	}

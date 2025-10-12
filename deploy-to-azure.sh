@@ -192,6 +192,13 @@ echo ""
 
 echo -e "${BLUE}Step 7: Configuring application settings...${NC}"
 
+# Get storage account connection string for Azure Functions runtime
+STORAGE_CONNECTION_STRING=$(az storage account show-connection-string \
+    --name $STORAGE_ACCOUNT \
+    --resource-group $RESOURCE_GROUP \
+    --query connectionString \
+    -o tsv)
+
 # Note: OpenFGA store will be created on container startup
 # We're setting empty OPENFGA_STORE_ID - the container will create one
 az functionapp config appsettings set \
@@ -200,6 +207,9 @@ az functionapp config appsettings set \
     --settings \
         "WEBSITES_ENABLE_APP_SERVICE_STORAGE=false" \
         "WEBSITES_PORT=80" \
+        "WEBSITES_HEALTHCHECK_MAXPINGFAILURES=10" \
+        "FUNCTIONS_WORKER_RUNTIME=dotnet-isolated" \
+        "AzureWebJobsStorage=$STORAGE_CONNECTION_STRING" \
         "OPENFGA_API_URL=http://localhost:8080" \
         "OPENFGA_STORE_ID=" \
         "OPENFGA_DATASTORE_ENGINE=memory" \

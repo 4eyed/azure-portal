@@ -14,6 +14,21 @@ echo "  OPENFGA_DATASTORE_URI: ${OPENFGA_DATASTORE_URI:0:50}... (truncated)"
 echo "  WEBSITES_PORT: ${WEBSITES_PORT:-not set}"
 echo ""
 
+# Check if connection string uses Managed Identity
+if [[ "$OPENFGA_DATASTORE_URI" == *"fedauth=ActiveDirectoryMSI"* ]] || \
+   [[ "$OPENFGA_DATASTORE_URI" == *"fedauth=ActiveDirectoryManagedIdentity"* ]] || \
+   [[ "$OPENFGA_DATASTORE_URI" == *"fedauth=ActiveDirectoryDefault"* ]]; then
+    echo "🔐 Detected Azure Managed Identity authentication"
+    echo "   Authentication will use the container's managed identity"
+    echo ""
+elif [[ "$OPENFGA_DATASTORE_URI" == *"Password="* ]] || [[ "$OPENFGA_DATASTORE_URI" == *"pwd="* ]]; then
+    echo "🔑 Using legacy password-based authentication"
+    echo ""
+else
+    echo "⚠️  Connection string format unclear - will attempt password-less connection"
+    echo ""
+fi
+
 # Validate required environment variables
 if [ -z "$OPENFGA_DATASTORE_URI" ]; then
     echo "❌ ERROR: OPENFGA_DATASTORE_URI environment variable is required"
@@ -41,18 +56,27 @@ openfga run \
     --log-format json > /var/log/openfga.log 2>&1 &
 OPENFGA_PID=$!
 
-# Wait for OpenFGA to be ready (up to 3 minutes for SQL migrations)
-echo "Waiting for OpenFGA to be ready (this may take up to 3 minutes for SQL migrations)..."
-OPENFGA_TIMEOUT=180  # 3 minutes
+# Wait for OpenFGA to be ready (reduced to 2 minutes for faster failure detection)
+echo "Waiting for OpenFGA to be ready (max 2 minutes for SQL migrations)..."
+OPENFGA_TIMEOUT=120  # 2 minutes (safer margin for Azure's 230s timeout)
 OPENFGA_INTERVAL=5   # Check every 5 seconds
 ELAPSED=0
 
 while [ $ELAPSED -lt $OPENFGA_TIMEOUT ]; do
     if curl -s http://localhost:8080/healthz > /dev/null 2>&1; then
-        echo "✅ OpenFGA is ready! (took ${ELAPSED}s)"
+        echo "✅ OpenFGA is ready! (took ${ELAPSED}s at $(date '+%Y-%m-%d %H:%M:%S'))"
         break
     fi
-    echo "⏳ Waiting for OpenFGA... (${ELAPSED}s / ${OPENFGA_TIMEOUT}s)"
+    echo "⏳ [$(date '+%H:%M:%S')] Waiting for OpenFGA... (${ELAPSED}s / ${OPENFGA_TIMEOUT}s)"
+
+    # Check if OpenFGA process is still running
+    if ! kill -0 $OPENFGA_PID 2>/dev/null; then
+        echo "❌ ERROR: OpenFGA process died unexpectedly"
+        echo "OpenFGA logs:"
+        cat /var/log/openfga.log
+        exit 1
+    fi
+
     sleep $OPENFGA_INTERVAL
     ELAPSED=$((ELAPSED + OPENFGA_INTERVAL))
 done
@@ -60,8 +84,8 @@ done
 # Check if OpenFGA started successfully
 if ! curl -s http://localhost:8080/healthz > /dev/null 2>&1; then
     echo "❌ ERROR: OpenFGA failed to start after ${OPENFGA_TIMEOUT}s"
-    echo "OpenFGA logs:"
-    cat /var/log/openfga.log
+    echo "OpenFGA logs (last 50 lines):"
+    tail -50 /var/log/openfga.log
     exit 1
 fi
 
@@ -206,5 +230,9 @@ ls -la *.dll 2>/dev/null | head -5 || echo "No DLL files found"
 echo ""
 
 # Start the Functions host with environment properly set
-echo "🚀 Executing Azure Functions host..."
+echo "🚀 Executing Azure Functions host at $(date '+%Y-%m-%d %H:%M:%S')..."
+echo "   Total startup time so far: ${ELAPSED}s"
+echo ""
+
+# Forward Functions logs to stdout for Azure diagnostics
 exec /azure-functions-host/Microsoft.Azure.WebJobs.Script.WebHost

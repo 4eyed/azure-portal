@@ -26,6 +26,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/jon-whit/go-grpc-prometheus v1.4.0
+	github.com/microsoft/go-mssqldb v1.9.3
 	github.com/natefinch/wrap v0.2.0
 	github.com/oklog/ulid/v2 v2.1.1
 	github.com/openfga/api/proto v0.0.0-20250909172242-b4b2a12f5c67
@@ -63,7 +64,11 @@ require (
 	cel.dev/expr v0.24.0 // indirect
 	cloud.google.com/go/compute/metadata v0.8.2 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.19.1 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.13.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/internal v1.11.2 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
+	github.com/AzureAD/microsoft-authentication-library-for-go v1.5.0 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -104,7 +109,6 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mfridman/interpolate v0.0.2 // indirect
-	github.com/microsoft/go-mssqldb v1.9.3 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/sys/atomicwriter v0.1.0 // indirect
 	github.com/moby/term v0.5.0 // indirect
@@ -116,6 +120,7 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
+	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
