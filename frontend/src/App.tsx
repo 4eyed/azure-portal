@@ -9,6 +9,7 @@ import { Sidebar } from './components/Layout/Sidebar';
 import { Header } from './components/Layout/Header';
 import { Dashboard } from './pages/Dashboard';
 import { PowerBIReport } from './pages/PowerBIReport';
+import { EnvDebugger } from './components/Debug/EnvDebugger';
 import './App.css';
 
 const msalInstance = new PublicClientApplication(msalConfig);
@@ -62,6 +63,7 @@ function App() {
     <BaseMsalProvider instance={msalInstance}>
       <BrowserRouter>
         <AppContent />
+        <EnvDebugger />
       </BrowserRouter>
     </BaseMsalProvider>
   );

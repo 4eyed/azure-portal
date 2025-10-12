@@ -1,7 +1,25 @@
-const API_URL = import.meta.env.VITE_API_URL;
+// Use relative /api path for production (linked backend) or full URL for local dev
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
-if (!API_URL) {
-  throw new Error('VITE_API_URL environment variable is required');
+// Debug logging
+console.group('📡 Menu API Client Configuration');
+console.log('API URL:', API_URL);
+console.log('Mode:', import.meta.env.MODE);
+console.log('Is Dev:', import.meta.env.DEV);
+console.log('Will use query params:', import.meta.env.DEV ? 'Yes (local dev)' : 'No (production, uses X-MS-CLIENT-PRINCIPAL header)');
+console.groupEnd();
+
+// In production with linked backend, VITE_API_URL should be undefined or '/api'
+// In local dev, VITE_API_URL should be 'http://localhost:7071/api'
+
+// Helper to add query params only in dev mode
+function buildUrl(path: string, userId?: string): string {
+  const base = `${API_URL}${path}`;
+  // In local dev, pass userId as query param. In production, Azure Static Web Apps handles auth.
+  if (import.meta.env.DEV && userId) {
+    return `${base}?user=${encodeURIComponent(userId)}`;
+  }
+  return base;
 }
 
 export interface MenuItemData {
@@ -40,11 +58,12 @@ export const menuClient = {
   baseUrl: API_URL,
 
   async createMenuItem(data: MenuItemData, userId: string) {
-    const response = await fetch(`${this.baseUrl}/menu-items?user=${encodeURIComponent(userId)}`, {
+    const response = await fetch(buildUrl('/menu-items', userId), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     });
 
@@ -57,11 +76,12 @@ export const menuClient = {
   },
 
   async updateMenuItem(id: number, data: MenuItemData, userId: string) {
-    const response = await fetch(`${this.baseUrl}/menu-items/${id}?user=${encodeURIComponent(userId)}`, {
+    const response = await fetch(buildUrl(`/menu-items/${id}`, userId), {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     });
 
@@ -74,8 +94,9 @@ export const menuClient = {
   },
 
   async deleteMenuItem(id: number, userId: string) {
-    const response = await fetch(`${this.baseUrl}/menu-items/${id}?user=${encodeURIComponent(userId)}`, {
+    const response = await fetch(buildUrl(`/menu-items/${id}`, userId), {
       method: 'DELETE',
+      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -92,11 +113,12 @@ export const menuClient = {
   },
 
   async createMenuGroup(data: MenuGroupData, userId: string) {
-    const response = await fetch(`${this.baseUrl}/menu-groups?user=${encodeURIComponent(userId)}`, {
+    const response = await fetch(buildUrl('/menu-groups', userId), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     });
 
@@ -109,11 +131,12 @@ export const menuClient = {
   },
 
   async updateMenuGroup(id: number, data: MenuGroupData, userId: string) {
-    const response = await fetch(`${this.baseUrl}/menu-groups/${id}?user=${encodeURIComponent(userId)}`, {
+    const response = await fetch(buildUrl(`/menu-groups/${id}`, userId), {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     });
 

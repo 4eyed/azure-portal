@@ -5,6 +5,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using MenuApi.Models.DTOs;
 using MenuApi.Services;
+using MenuApi.Extensions;
 
 namespace MenuApi.Functions;
 
@@ -16,15 +17,18 @@ public class CreateMenuItem
     private readonly ILogger<CreateMenuItem> _logger;
     private readonly IMenuService _menuService;
     private readonly IAuthorizationService _authService;
+    private readonly IClaimsPrincipalParser _claimsParser;
 
     public CreateMenuItem(
         ILogger<CreateMenuItem> logger,
         IMenuService menuService,
-        IAuthorizationService authService)
+        IAuthorizationService authService,
+        IClaimsPrincipalParser claimsParser)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _menuService = menuService ?? throw new ArgumentNullException(nameof(menuService));
         _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+        _claimsParser = claimsParser ?? throw new ArgumentNullException(nameof(claimsParser));
     }
 
     [Function("CreateMenuItem")]
@@ -33,22 +37,26 @@ public class CreateMenuItem
     {
         try
         {
-            var userId = req.Query["user"].ToString();
+            // Extract authenticated user ID
+            var userId = req.GetAuthenticatedUserId(_claimsParser);
             if (string.IsNullOrEmpty(userId))
             {
-                return new BadRequestObjectResult(new ErrorResponse
+                return new UnauthorizedObjectResult(new ErrorResponse
                 {
-                    Error = "User parameter is required"
+                    Error = "User is not authenticated"
                 });
             }
 
             // Check if user is admin
-            if (!await _authService.IsAdmin(userId))
+            if (!req.IsAdmin(_claimsParser) && !await _authService.IsAdmin(userId))
             {
-                return new UnauthorizedObjectResult(new ErrorResponse
+                return new ObjectResult(new ErrorResponse
                 {
                     Error = "Only admins can create menu items"
-                });
+                })
+                {
+                    StatusCode = StatusCodes.Status403Forbidden
+                };
             }
 
             var body = await new StreamReader(req.Body).ReadToEndAsync();

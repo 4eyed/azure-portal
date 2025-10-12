@@ -167,7 +167,7 @@ jobs:
               "OPENFGA_DATASTORE_ENGINE=sqlserver" \
               "OPENFGA_DATASTORE_URI=${{ secrets.SQL_CONNECTION_STRING }}" \
               "OPENFGA_LOG_FORMAT=json" \
-              "DOTNET_CONNECTION_STRING=${{ secrets.DOTNET_CONNECTION_STRING }}" \
+              "DOTNET_CONNECTION_STRING=${{ secrets.SQL_CONNECTION_STRING }}" \
               "DEPLOYMENT_SHA=${{ github.sha }}" \
               "DEPLOYMENT_TIME=${{ github.event.head_commit.timestamp }}"
 

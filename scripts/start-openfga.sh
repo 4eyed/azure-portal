@@ -128,25 +128,26 @@ else
 fi
 
 # Load seed data if model exists
-if [ -n "$AUTH_MODEL_ID" ]; then
-    echo -e "${BLUE}📤 Loading seed data (alice, bob, charlie)...${NC}"
-    TUPLES=$(cat "$PROJECT_ROOT/openfga-config/seed-data.json" | grep -v '^\s*$')
-
-    WRITE_RESPONSE=$(curl -s -X POST "http://localhost:8080/stores/$STORE_ID/write" \
-        -H "Content-Type: application/json" \
-        -d "{\"writes\":$TUPLES,\"authorization_model_id\":\"$AUTH_MODEL_ID\"}")
-
-    if echo "$WRITE_RESPONSE" | grep -q '"code"'; then
-        ERROR_MSG=$(echo "$WRITE_RESPONSE" | grep -o '"message":"[^"]*"' | sed 's/"message":"//' | sed 's/"//')
-        if [[ "$ERROR_MSG" == *"already exists"* ]]; then
-            echo -e "${GREEN}✅ Seed data already loaded${NC}"
-        else
-            echo -e "${YELLOW}⚠️  Seed data response: $ERROR_MSG${NC}"
-        fi
-    else
-        echo -e "${GREEN}✅ Seed data loaded successfully${NC}"
-    fi
-fi
+# NOTE: Seed data loading is disabled - manage authorization via database/API instead
+# if [ -n "$AUTH_MODEL_ID" ]; then
+#     echo -e "${BLUE}📤 Loading seed data (alice, bob, charlie)...${NC}"
+#     TUPLES=$(cat "$PROJECT_ROOT/openfga-config/seed-data.json" | jq -c '.tuples')
+#
+#     WRITE_RESPONSE=$(curl -s -X POST "http://localhost:8080/stores/$STORE_ID/write" \
+#         -H "Content-Type: application/json" \
+#         -d "{\"writes\":{\"tuple_keys\":$TUPLES},\"authorization_model_id\":\"$AUTH_MODEL_ID\"}")
+#
+#     if echo "$WRITE_RESPONSE" | grep -q '"code"'; then
+#         ERROR_MSG=$(echo "$WRITE_RESPONSE" | grep -o '"message":"[^"]*"' | sed 's/"message":"//' | sed 's/"//')
+#         if [[ "$ERROR_MSG" == *"already exists"* ]]; then
+#             echo -e "${GREEN}✅ Seed data already loaded${NC}"
+#         else
+#             echo -e "${YELLOW}⚠️  Seed data response: $ERROR_MSG${NC}"
+#         fi
+#     else
+#         echo -e "${GREEN}✅ Seed data loaded successfully${NC}"
+#     fi
+# fi
 
 echo ""
 echo -e "${GREEN}========================================${NC}"

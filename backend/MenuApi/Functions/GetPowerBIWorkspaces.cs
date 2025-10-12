@@ -4,6 +4,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using MenuApi.Models.DTOs;
 using MenuApi.Services;
+using MenuApi.Extensions;
 
 namespace MenuApi.Functions;
 
@@ -14,11 +15,16 @@ public class GetPowerBIWorkspaces
 {
     private readonly ILogger<GetPowerBIWorkspaces> _logger;
     private readonly IPowerBIService _powerBIService;
+    private readonly IClaimsPrincipalParser _claimsParser;
 
-    public GetPowerBIWorkspaces(ILogger<GetPowerBIWorkspaces> logger, IPowerBIService powerBIService)
+    public GetPowerBIWorkspaces(
+        ILogger<GetPowerBIWorkspaces> logger,
+        IPowerBIService powerBIService,
+        IClaimsPrincipalParser claimsParser)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _powerBIService = powerBIService ?? throw new ArgumentNullException(nameof(powerBIService));
+        _claimsParser = claimsParser ?? throw new ArgumentNullException(nameof(claimsParser));
     }
 
     [Function("GetPowerBIWorkspaces")]
@@ -27,6 +33,16 @@ public class GetPowerBIWorkspaces
     {
         try
         {
+            // Extract authenticated user ID
+            var userId = req.GetAuthenticatedUserId(_claimsParser);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return new UnauthorizedObjectResult(new ErrorResponse
+                {
+                    Error = "User is not authenticated"
+                });
+            }
+
             _logger.LogInformation("Fetching Power BI workspaces");
 
             // Extract the user's access token from the Authorization header

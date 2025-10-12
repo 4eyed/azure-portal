@@ -22,13 +22,9 @@ jobs:
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
-        env:
-          # Vite environment variables (must start with VITE_)
-          # Using existing GitHub secrets - map to VITE_ prefixed names for build
-          VITE_AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          VITE_AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          VITE_AZURE_REDIRECT_URI: https://witty-flower-068de881e.2.azurestaticapps.net
-          VITE_API_URL: https://func-menu-app-18436.azurewebsites.net/api
+        # NOTE: Environment variables are configured in Azure Portal (Settings → Environment variables)
+        # The env: block here does NOT work because Azure Static Web Apps runs the build in Azure's environment
+        # See SECURITY-SETUP.md for details on why GitHub Actions env: doesn't transfer to Azure builds
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WITTY_FLOWER_068DE881E }}
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
@@ -36,9 +32,15 @@ jobs:
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
           # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
           app_location: "/frontend" # App source code path
-          api_location: "" # No API - using separate Azure Functions deployment
+          api_location: "" # Empty - using linked Azure Functions backend (configured in Azure Portal)
           output_location: "dist" # Vite builds to dist/ directory
           ###### End of Repository/Build Configurations ######
+
+          # NOTE: After deployment, link the Azure Functions backend in Azure Portal:
+          # 1. Go to Static Web App > APIs > Production
+          # 2. Click "Link" and select your Azure Functions app (func-menu-app-18436)
+          # 3. This will add "Azure Static Web Apps (Linked)" identity provider to Functions
+          # 4. Functions will only be accessible through the Static Web App (not publicly)
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'

@@ -65,6 +65,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMenuService, MenuService>();
         services.AddScoped<IPowerBIService, PowerBIService>();
         services.AddScoped<IAuthorizationService, AuthorizationService>();
+        services.AddScoped<IClaimsPrincipalParser, ClaimsPrincipalParser>();
 
         return services;
     }

@@ -4,6 +4,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using MenuApi.Models.DTOs;
 using MenuApi.Services;
+using MenuApi.Extensions;
 
 namespace MenuApi.Functions;
 
@@ -14,11 +15,16 @@ public class GetPowerBIReports
 {
     private readonly ILogger<GetPowerBIReports> _logger;
     private readonly IPowerBIService _powerBIService;
+    private readonly IClaimsPrincipalParser _claimsParser;
 
-    public GetPowerBIReports(ILogger<GetPowerBIReports> logger, IPowerBIService powerBIService)
+    public GetPowerBIReports(
+        ILogger<GetPowerBIReports> logger,
+        IPowerBIService powerBIService,
+        IClaimsPrincipalParser claimsParser)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _powerBIService = powerBIService ?? throw new ArgumentNullException(nameof(powerBIService));
+        _claimsParser = claimsParser ?? throw new ArgumentNullException(nameof(claimsParser));
     }
 
     [Function("GetPowerBIReports")]
@@ -27,6 +33,16 @@ public class GetPowerBIReports
     {
         try
         {
+            // Extract authenticated user ID
+            var userId = req.GetAuthenticatedUserId(_claimsParser);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return new UnauthorizedObjectResult(new ErrorResponse
+                {
+                    Error = "User is not authenticated"
+                });
+            }
+
             var workspaceId = req.Query["workspaceId"].ToString();
             if (string.IsNullOrEmpty(workspaceId))
             {

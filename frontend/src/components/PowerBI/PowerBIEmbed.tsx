@@ -25,6 +25,14 @@ export function PowerBIEmbed({ reportId }: PowerBIEmbedProps) {
       return;
     }
 
+    // Wait for menu groups to load before attempting to find config
+    if (menuGroups.length === 0) {
+      console.log('Menu groups not yet loaded, waiting...');
+      setError(null); // Clear any previous errors
+      setEmbedConfig(null); // Clear any previous config
+      return;
+    }
+
     try {
       console.log('Looking for reportId:', reportId, 'in menu groups:', menuGroups);
 

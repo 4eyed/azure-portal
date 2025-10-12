@@ -5,6 +5,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using MenuApi.Models.DTOs;
 using MenuApi.Services;
+using MenuApi.Extensions;
 
 namespace MenuApi.Functions;
 
@@ -15,11 +16,16 @@ public class GenerateEmbedToken
 {
     private readonly ILogger<GenerateEmbedToken> _logger;
     private readonly IPowerBIService _powerBIService;
+    private readonly IClaimsPrincipalParser _claimsParser;
 
-    public GenerateEmbedToken(ILogger<GenerateEmbedToken> logger, IPowerBIService powerBIService)
+    public GenerateEmbedToken(
+        ILogger<GenerateEmbedToken> logger,
+        IPowerBIService powerBIService,
+        IClaimsPrincipalParser claimsParser)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _powerBIService = powerBIService ?? throw new ArgumentNullException(nameof(powerBIService));
+        _claimsParser = claimsParser ?? throw new ArgumentNullException(nameof(claimsParser));
     }
 
     [Function("GenerateEmbedToken")]
@@ -28,6 +34,16 @@ public class GenerateEmbedToken
     {
         try
         {
+            // Extract authenticated user ID
+            var userId = req.GetAuthenticatedUserId(_claimsParser);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return new UnauthorizedObjectResult(new ErrorResponse
+                {
+                    Error = "User is not authenticated"
+                });
+            }
+
             // Extract the user's access token from the Authorization header
             var authHeader = req.Headers["Authorization"].ToString();
             if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))

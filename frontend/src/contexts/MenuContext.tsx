@@ -1,7 +1,14 @@
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { useAuth } from '../auth/useAuth';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api';
+// Use relative /api path for production (linked backend) or full URL for local dev
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+
+// Debug logging
+console.group('🍔 Menu Context Configuration');
+console.log('API URL:', API_URL);
+console.log('Mode:', import.meta.env.MODE);
+console.groupEnd();
 
 interface MenuItem {
   id: number;
@@ -44,7 +51,15 @@ export function MenuProvider({ children }: { children: ReactNode }) {
 
     try {
       const username = user.username || 'alice';
-      const response = await fetch(`${API_URL}/menu-structure?user=${username}`);
+      // In production, X-MS-CLIENT-PRINCIPAL header is automatically injected
+      // In local dev, pass user as query param
+      const url = import.meta.env.DEV
+        ? `${API_URL}/menu-structure?user=${username}`
+        : `${API_URL}/menu-structure`;
+
+      const response = await fetch(url, {
+        credentials: 'include', // Include cookies for authentication
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to load menu: ${response.statusText}`);

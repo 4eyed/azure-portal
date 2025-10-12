@@ -25,18 +25,40 @@ public class CorsObjectResult : ObjectResult
 
     private static void AddCorsHeaders(ActionContext context)
     {
+        var request = context.HttpContext.Request;
         var headers = context.HttpContext.Response.Headers;
 
+        // Get the origin from the request headers
+        var origin = request.Headers.ContainsKey("Origin")
+            ? request.Headers["Origin"].ToString()
+            : null;
+
+        // Allow specific origins for local development and production
+        var allowedOrigins = new[]
+        {
+            "http://localhost:5173",  // Vite dev server
+            "http://localhost:3000",  // Alternative dev port
+            "https://witty-flower-068de881e.2.azurestaticapps.net"  // Production
+        };
+
+        // If origin is in allowed list, use it; otherwise use first allowed origin as fallback
+        var allowOrigin = origin != null && allowedOrigins.Contains(origin)
+            ? origin
+            : allowedOrigins[0];
+
         if (!headers.ContainsKey("Access-Control-Allow-Origin"))
-            headers.Add("Access-Control-Allow-Origin", "*");
+            headers["Access-Control-Allow-Origin"] = allowOrigin;
+
+        if (!headers.ContainsKey("Access-Control-Allow-Credentials"))
+            headers["Access-Control-Allow-Credentials"] = "true";  // Required for credentials: 'include'
 
         if (!headers.ContainsKey("Access-Control-Allow-Methods"))
-            headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+            headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS";
 
         if (!headers.ContainsKey("Access-Control-Allow-Headers"))
-            headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+            headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, X-MS-CLIENT-PRINCIPAL";
 
         if (!headers.ContainsKey("Access-Control-Max-Age"))
-            headers.Add("Access-Control-Max-Age", "86400");
+            headers["Access-Control-Max-Age"] = "86400";
     }
 }

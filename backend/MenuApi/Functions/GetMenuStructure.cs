@@ -15,11 +15,13 @@ public class GetMenuStructure
 {
     private readonly ILogger<GetMenuStructure> _logger;
     private readonly IMenuService _menuService;
+    private readonly IClaimsPrincipalParser _claimsParser;
 
-    public GetMenuStructure(ILogger<GetMenuStructure> logger, IMenuService menuService)
+    public GetMenuStructure(ILogger<GetMenuStructure> logger, IMenuService menuService, IClaimsPrincipalParser claimsParser)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _menuService = menuService ?? throw new ArgumentNullException(nameof(menuService));
+        _claimsParser = claimsParser ?? throw new ArgumentNullException(nameof(claimsParser));
     }
 
     [Function("GetMenuStructure")]
@@ -28,13 +30,24 @@ public class GetMenuStructure
     {
         try
         {
-            var userId = req.Query["user"].ToString();
+            // Extract user ID from X-MS-CLIENT-PRINCIPAL header (injected by Azure Static Web Apps)
+            var userId = _claimsParser.GetUserId(req);
+
+            // Fallback to query parameter for local development
+            if (string.IsNullOrEmpty(userId))
+            {
+                userId = req.Query["user"].ToString();
+            }
+
             if (string.IsNullOrEmpty(userId))
             {
                 return new CorsObjectResult(new ErrorResponse
                 {
-                    Error = "User parameter is required"
-                });
+                    Error = "User is not authenticated"
+                })
+                {
+                    StatusCode = StatusCodes.Status401Unauthorized
+                };
             }
 
             _logger.LogInformation("Fetching menu structure for user: {UserId}", userId);

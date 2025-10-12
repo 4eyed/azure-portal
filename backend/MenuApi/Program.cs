@@ -8,7 +8,8 @@ using MenuApi.Middleware;
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication(builder =>
     {
-        builder.UseMiddleware<CorsMiddleware>();
+        // CORS is now handled by CorsObjectResult in the functions
+        // builder.UseMiddleware<CorsMiddleware>();
     })
     .ConfigureServices((context, services) =>
     {

@@ -1,8 +1,11 @@
-const API_URL = import.meta.env.VITE_API_URL;
+// Use relative /api path for production (linked backend) or full URL for local dev
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
-if (!API_URL) {
-  throw new Error('VITE_API_URL environment variable is required');
-}
+// Debug logging
+console.group('⚡ Power BI API Client Configuration');
+console.log('API URL:', API_URL);
+console.log('Mode:', import.meta.env.MODE);
+console.groupEnd();
 
 export const powerBIClient = {
   baseUrl: API_URL,
@@ -12,6 +15,7 @@ export const powerBIClient = {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
       },
+      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -28,6 +32,7 @@ export const powerBIClient = {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
         },
+        credentials: 'include',
       }
     );
 
@@ -45,6 +50,7 @@ export const powerBIClient = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`,
       },
+      credentials: 'include',
       body: JSON.stringify({ workspaceId, reportId }),
     });
 
