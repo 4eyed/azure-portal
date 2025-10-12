@@ -54,7 +54,11 @@ public class GetMenuStructure
 
             var result = await _menuService.GetMenuStructure(userId);
 
-            return new CorsObjectResult(result);
+            // Add caching headers to reduce API calls (5 minutes cache)
+            var response = new CorsObjectResult(result);
+            req.HttpContext.Response.Headers["Cache-Control"] = "private, max-age=300";
+
+            return response;
         }
         catch (Exception ex)
         {

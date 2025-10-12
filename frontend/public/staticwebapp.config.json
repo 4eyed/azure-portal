@@ -9,6 +9,10 @@
       "allowedRoles": ["anonymous"]
     },
     {
+      "route": "/assets/*",
+      "allowedRoles": ["anonymous"]
+    },
+    {
       "route": "/api/*",
       "allowedRoles": ["authenticated"]
     },
@@ -20,7 +24,7 @@
   ],
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/images/*.{png,jpg,gif,svg}", "/css/*", "/api/*"]
+    "exclude": ["/assets/*", "/images/*.{png,jpg,gif,svg}", "/css/*", "/api/*", "/*.{js,css,png,jpg,gif,svg,ico,json,txt}"]
   },
   "auth": {
     "identityProviders": {

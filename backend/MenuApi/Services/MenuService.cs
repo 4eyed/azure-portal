@@ -22,6 +22,7 @@ public class MenuService : IMenuService
     public async Task<MenuStructureResponse> GetMenuStructure(string userId)
     {
         var groups = await _dbContext.MenuGroups
+            .AsNoTracking() // Read-only query optimization
             .Include(g => g.MenuItems)
             .ThenInclude(i => i.PowerBIConfig)
             .Where(g => g.IsVisible)
@@ -30,13 +31,24 @@ public class MenuService : IMenuService
 
         var result = new MenuStructureResponse();
 
+        // Collect all visible menu item names for batch authorization check
+        var allMenuItemNames = groups
+            .SelectMany(g => g.MenuItems.Where(i => i.IsVisible))
+            .Select(i => i.Name)
+            .Distinct()
+            .ToList();
+
+        // Perform batch authorization check to avoid N+1 queries to OpenFGA
+        var authorizationResults = await _authService.CanViewMenuItems(userId, allMenuItemNames);
+
         foreach (var group in groups)
         {
             var accessibleItems = new List<MenuItemDto>();
 
             foreach (var item in group.MenuItems.Where(i => i.IsVisible).OrderBy(i => i.DisplayOrder))
             {
-                if (await _authService.CanViewMenuItem(userId, item.Name))
+                // Check if user can view this menu item using pre-fetched authorization results
+                if (authorizationResults.TryGetValue(item.Name, out var canView) && canView)
                 {
                     accessibleItems.Add(new MenuItemDto
                     {

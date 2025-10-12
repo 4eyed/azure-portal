@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef, ReactNode } from 'react';
 import { useAuth } from '../auth/useAuth';
 
 // Use relative /api path for production (linked backend) or full URL for local dev
@@ -42,10 +42,18 @@ export function MenuProvider({ children }: { children: ReactNode }) {
   const [menuGroups, setMenuGroups] = useState<MenuGroupData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fetchInProgressRef = useRef(false);
 
   const reloadMenu = useCallback(async () => {
     if (!user) return;
 
+    // Prevent duplicate calls if already loading (React StrictMode protection)
+    if (fetchInProgressRef.current) {
+      console.log('Menu fetch already in progress, skipping duplicate call');
+      return;
+    }
+
+    fetchInProgressRef.current = true;
     setLoading(true);
     setError(null);
 
@@ -57,6 +65,8 @@ export function MenuProvider({ children }: { children: ReactNode }) {
         ? `${API_URL}/menu-structure?user=${username}`
         : `${API_URL}/menu-structure`;
 
+      console.log('Fetching menu structure from:', url);
+
       const response = await fetch(url, {
         credentials: 'include', // Include cookies for authentication
       });
@@ -66,6 +76,7 @@ export function MenuProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await response.json();
+      console.log('Menu structure loaded:', data.menuGroups?.length, 'groups');
       setMenuGroups(data.menuGroups || []);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load menu';
@@ -73,6 +84,7 @@ export function MenuProvider({ children }: { children: ReactNode }) {
       console.error('Error loading menu structure:', err);
     } finally {
       setLoading(false);
+      fetchInProgressRef.current = false;
     }
   }, [user]);
 
@@ -81,7 +93,8 @@ export function MenuProvider({ children }: { children: ReactNode }) {
     if (user) {
       reloadMenu();
     }
-  }, [user, reloadMenu]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]); // Only depend on user, not reloadMenu (which is stable via useCallback)
 
   return (
     <MenuContext.Provider value={{ menuGroups, loading, error, reloadMenu }}>
