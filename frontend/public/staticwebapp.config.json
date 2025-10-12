@@ -46,9 +46,6 @@
       "statusCode": 302
     }
   },
-  "platform": {
-    "apiRuntime": "node:18"
-  },
   "globalHeaders": {
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
