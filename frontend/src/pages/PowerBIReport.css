@@ -1,0 +1,16 @@
+.powerbi-report-page {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  border: none;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+.error {
+  padding: 2rem;
+  color: #d32f2f;
+  text-align: center;
+}

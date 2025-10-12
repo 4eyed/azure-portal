@@ -47,7 +47,25 @@ if [ -f /tmp/openfga.log ]; then
     rm /tmp/openfga.log
 fi
 
+# Stop and remove all container variants
+CONTAINERS_STOPPED=false
+for container in menu-app-local menu-app; do
+    if podman ps -a | grep -q $container; then
+        echo -e "${YELLOW}Stopping and removing container: $container${NC}"
+        podman stop $container 2>/dev/null || true
+        podman rm $container 2>/dev/null || true
+        CONTAINERS_STOPPED=true
+    fi
+done
+
+if [ "$CONTAINERS_STOPPED" = true ]; then
+    echo -e "${GREEN}✅ Containers stopped and removed${NC}"
+else
+    echo -e "${GREEN}✓ No containers running${NC}"
+fi
+
 echo ""
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}✅ All services stopped${NC}"
 echo -e "${GREEN}========================================${NC}"
+echo -e "${YELLOW}💡 To also clean up images, run: npm run clean${NC}"

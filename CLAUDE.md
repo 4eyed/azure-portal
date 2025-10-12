@@ -1,46 +1,77 @@
-# Menu Access Control Demo
+# JA Portal - Enterprise Portal with Power BI Integration
 
-A full-stack Azure application demonstrating fine-grained authorization using OpenFGA with a custom SQL Server backend.
+A full-stack Azure application with hierarchical menu management, Power BI report embedding, and fine-grained authorization using OpenFGA.
 
 ## Architecture
 
 ```
-┌─────────────────┐      ┌──────────────────────┐      ┌─────────────────┐
-│  React Frontend │─────▶│  Azure Functions API │─────▶│  OpenFGA Server │
-│  (Static Web)   │      │  (.NET 8)            │      │  (Custom Build) │
-└─────────────────┘      └──────────────────────┘      └─────────────────┘
-                                                                │
-                                                                ▼
-                                                        ┌─────────────────┐
-                                                        │  Azure SQL DB   │
-                                                        │  (Serverless)   │
-                                                        └─────────────────┘
+┌────────────────────────────────────────────────┐
+│  React Frontend (Vite + React 19)              │
+│  - Azure AD Authentication (MSAL React)        │
+│  - Hierarchical Menu Navigation                │
+│  - Power BI Embed (powerbi-client-react)       │
+│  - Material-UI Components                      │
+│  - Admin Mode (Menu CRUD)                      │
+└────────────────────────────────────────────────┘
+                      │
+                      ▼
+┌────────────────────────────────────────────────┐
+│  Azure Functions API (.NET 8)                  │
+│  - Menu Structure API (hierarchical)           │
+│  - Menu CRUD API (admin only)                  │
+│  - Power BI Service (workspaces, reports)      │
+│  - OpenFGA Authorization Checks                │
+└────────────────────────────────────────────────┘
+           │                 │                 │
+           ▼                 ▼                 ▼
+    ┌──────────┐     ┌──────────┐     ┌──────────────┐
+    │ Azure SQL│     │ OpenFGA  │     │  Power BI    │
+    │ Database │     │  Server  │     │  Service     │
+    └──────────┘     └──────────┘     └──────────────┘
 ```
+
+## Features
+
+### User Mode
+- **Hierarchical Navigation** - Sidebar with collapsible menu groups
+- **Azure AD Authentication** - MSAL React integration
+- **Power BI Embedding** - Interactive reports with filters
+- **Permission-Based Access** - Menu items filtered by OpenFGA
+- **Breadcrumb Navigation** - Dynamic page hierarchy
+- **User Profile Display** - Avatar and account info
+
+### Admin Mode
+- **Menu Management** - Create, edit, delete menu items
+- **Type Selector** - PowerBI, ExternalApp, AppComponent, RemoteModule, EmbedHTML
+- **Power BI Configuration** - Workspace/report selector with live data
+- **Embedding Settings** - Auto-refresh, zoom, filter panel controls
+- **Inline Editing** - Edit/visibility controls on menu items
+- **Admin Toggle** - Switch between user and admin modes
 
 ## Components
 
 ### Frontend ([frontend/](frontend/))
-- **Tech**: Vite + React 18
-- **Hosting**: Azure Static Web Apps
-- **Features**: User selection, dynamic menu rendering based on permissions
-- **Deployment**: GitHub Actions → Azure Static Web Apps
+- **Tech**: Vite + React 19, TypeScript, MSAL React 3.x, Power BI Client React 2.x, Material-UI 7.x
+- **Structure**: Small focused components (< 200 lines each)
+- **Pages**: Dashboard, PowerBIReport
+- **Components**: Layout (Sidebar, Header), Navigation (MenuGroup, MenuItem), PowerBI (Embed, ConfigModal), Admin (TypeSelector, MenuItemForm)
 
 ### Backend API ([backend/MenuApi/](backend/MenuApi/))
 - **Tech**: .NET 8 + Azure Functions (Isolated Worker)
-- **Hosting**: Azure Functions (Custom Container)
-- **Features**:
-  - `/api/menu?user=<name>` - Returns menu items user can access
-  - OpenFGA integration for authorization checks
-  - Hardcoded menu items with dynamic permission filtering
+- **Endpoints**:
+  - `GET /api/menu-structure` - Hierarchical menu with permissions
+  - `POST /api/menu-items` - Create menu item (admin only)
+  - `PUT /api/menu-items/{id}` - Update menu item (admin only)
+  - `DELETE /api/menu-items/{id}` - Delete menu item (admin only)
+  - `GET /api/powerbi/workspaces` - List Power BI workspaces
+  - `GET /api/powerbi/reports` - List reports in workspace
+  - `POST /api/powerbi/embed-token` - Generate embed token
 
-### Authorization Server
-- **Tech**: OpenFGA (custom fork with SQL Server driver)
-- **Hosting**: Same container as Functions API (sidecar pattern)
-- **Storage**: Azure SQL Database
-- **Features**:
-  - Relationship-based access control (ReBAC)
-  - Role-based permissions (admin, editor, viewer)
-  - Runs migrations and initializes model/data on startup
+### Database Schema
+- **MenuGroup** - Hierarchical menu organization (self-referencing)
+- **MenuItem** - Menu items with type, order, visibility
+- **PowerBIConfig** - Embedding configuration (workspace, report, settings)
+- **Authorization via OpenFGA** - Relationship-based access control
 
 ## Authorization Model
 
@@ -114,73 +145,78 @@ FROM mcr.microsoft.com/azure-functions/dotnet-isolated:4-dotnet-isolated8.0
 
 ## Environment Variables
 
-**Azure Function App Settings**:
+**Frontend (.env)**:
 ```bash
-WEBSITES_PORT=80                          # Container exposes port 80
-WEBSITES_ENABLE_APP_SERVICE_STORAGE=false # Use container filesystem
+VITE_AZURE_CLIENT_ID=<app-registration-client-id>
+VITE_AZURE_TENANT_ID=<tenant-id>
+VITE_AZURE_REDIRECT_URI=http://localhost:5173
+VITE_API_URL=http://localhost:7071/api
+VITE_POWERBI_WORKSPACE_ID=<workspace-guid>
+VITE_POWERBI_REPORT_ID=<report-guid>
+VITE_POWERBI_EMBED_URL=https://app.powerbi.com/reportEmbed
+```
 
-OPENFGA_API_URL=http://localhost:8080     # Internal communication
-OPENFGA_STORE_ID=01K785TE28A2Z3NWGAABN1TE8E
+**Backend (Azure Function App Settings)**:
+```bash
+# Azure AD / Power BI
+AZURE_CLIENT_ID=<service-principal-id>
+AZURE_CLIENT_SECRET=<service-principal-secret>
+AZURE_TENANT_ID=<tenant-id>
+
+# Database
+DOTNET_CONNECTION_STRING=<sql-connection-string>
+
+# OpenFGA
+OPENFGA_API_URL=http://localhost:8080
+OPENFGA_STORE_ID=<store-id>
 OPENFGA_DATASTORE_ENGINE=sqlserver
-OPENFGA_DATASTORE_URI=sqlserver://user:pass@host:1433?database=...
+OPENFGA_DATASTORE_URI=<sql-connection-string-for-openfga>
 
-OPENFGA_LOG_FORMAT=json
-DEPLOYMENT_SHA=<git-sha>
-DEPLOYMENT_TIME=<timestamp>
+# Container Settings (Azure only)
+WEBSITES_PORT=80
+WEBSITES_ENABLE_APP_SERVICE_STORAGE=false
 ```
 
 ## Local Development
 
-### Quick Start (Recommended)
+### Quick Start
 
-**One command to start everything:**
-
+**Option 1: Container Mode (Recommended)**
 ```bash
-npm run dev
+npm install        # Install concurrently
+npm run dev        # Start container + frontend
 ```
 
-This starts:
-- OpenFGA server (port 8080)
-- Azure Functions API (port 7071)
-- React frontend (port 5173)
-
-**First time setup:**
-
+**Option 2: Native Mode (For Development)**
 ```bash
-# Install dependencies
-npm install
-cd frontend && npm install && cd ..
-
-# Start full stack
-npm run dev
-
-# Open browser
-open http://localhost:5173
+npm install        # Install concurrently + nodemon
+npm run dev:native # Start OpenFGA + backend + frontend
 ```
 
-See [QUICK-START.md](QUICK-START.md) for TL;DR or [LOCAL-DEV-GUIDE.md](LOCAL-DEV-GUIDE.md) for detailed documentation.
-
-### Individual Services
-
+**Option 3: Native Mode with Hot Reload**
 ```bash
-# Just frontend
-npm run frontend
-
-# Just backend (requires OpenFGA)
-npm run backend
-
-# Just OpenFGA
-npm run openfga
-
-# Stop everything
-npm run stop
+npm install        # Install dependencies
+npm run dev:watch  # Start with automatic backend rebuild on C# file changes
 ```
+
+**Access the app:**
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:7071/api
+- Health check: http://localhost:7071/api/health
 
 ### Prerequisites
-- .NET 8 SDK
-- Azure Functions Core Tools v4 (`npm install -g azure-functions-core-tools@4`)
-- Node.js 18+
-- OpenFGA binary (pre-built at `openfga-fork/openfga`)
+- **Container mode:** Podman/Docker + Node.js 18+
+- **Native mode:** Above + .NET 8 SDK + Azure Functions Core Tools v4 + Go 1.24
+
+### Detailed Instructions
+See [RUNNING-THE-APP.md](RUNNING-THE-APP.md) for:
+- First-time setup
+- Environment configuration
+- Testing the API
+- Troubleshooting
+- Individual component startup
+
+See [AZURE-AD-SETUP.md](AZURE-AD-SETUP.md) for Azure AD configuration details.
 
 ### Container (Full Stack)
 ```bash
@@ -217,15 +253,14 @@ curl "https://func-menu-app-18436.azurewebsites.net/api/menu?user=bob"
 # Expected: {"menuItems":[{"id":1,"name":"Dashboard",...}]}
 ```
 
-## Key Files
+## Documentation
 
-- [CLAUDE.md](CLAUDE.md) - This file
-- [STRUCTURE.txt](STRUCTURE.txt) - Detailed file listing
-- [LOCAL-SETUP-SUMMARY.txt](LOCAL-SETUP-SUMMARY.txt) - Local dev setup
-- [openfga-config/model.json](openfga-config/model.json) - Authorization schema
-- [openfga-config/seed-data.json](openfga-config/seed-data.json) - Sample data
-- [backend/MenuApi/Program.cs](backend/MenuApi/Program.cs) - DI configuration
-- [backend/MenuApi/MenuFunction.cs](backend/MenuApi/MenuFunction.cs) - API endpoints
+- [CLAUDE.md](CLAUDE.md) - This file (project overview)
+- [PORTAL-README.md](PORTAL-README.md) - Detailed setup guide
+- [IMPLEMENTATION-SUMMARY.md](IMPLEMENTATION-SUMMARY.md) - Technical implementation details
+- [AZURE-AD-SETUP.md](AZURE-AD-SETUP.md) - Azure AD configuration and credentials
+- [screenshots/Portal-Plan.md](screenshots/Portal-Plan.md) - Implementation plan and status
+- [frontend/.env.example](frontend/.env.example) - Environment variable template
 
 ## OpenFGA Custom Fork
 
@@ -250,30 +285,49 @@ go build -o openfga ./cmd/openfga
 
 The binary is built in CI and copied into the Docker image.
 
+## Current Status
+
+**✅ Implementation Complete**
+- 52 files created (~3,800 lines of code)
+- Frontend build: PASSING (196KB)
+- Backend build: PASSING
+- Azure AD app registration: Created
+- Service principal for Power BI: Created
+
+**Access the Application:**
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:7071/api
+- Credentials: See [AZURE-AD-SETUP.md](AZURE-AD-SETUP.md)
+
 ## Troubleshooting
 
-**Check logs**:
+**Frontend Issues:**
 ```bash
-az webapp log tail --name func-menu-app-18436 --resource-group rg-menu-app
+# Check if MSAL config is correct
+cat frontend/.env
+
+# Check browser console for errors
+# Verify redirect URI matches app registration
 ```
 
-**Download logs**:
+**Backend Issues:**
 ```bash
-az webapp log download --name func-menu-app-18436 --resource-group rg-menu-app
+# Test API endpoint
+curl http://localhost:7071/api/menu-structure?user=alice
+
+# Check environment variables
+# Verify database connection string
 ```
 
-**Test OpenFGA directly**:
-```bash
-# Inside container or when running locally
-curl http://localhost:8080/healthz
-curl http://localhost:8080/stores
-```
+**Authentication Issues:**
+- Check [AZURE-AD-SETUP.md](AZURE-AD-SETUP.md) for app registration details
+- Verify redirect URI is configured correctly
+- Wait 5-10 minutes for app registration to propagate
 
-**Common Issues**:
-- **"No menu items available"**: Authorization model not uploaded or tuples not written
-- **Timeout errors**: OpenFGA taking >3 min to start (increase timeout in start.sh)
-- **SQL connection errors**: Check firewall rules allow Azure services
-- **Container won't start**: Check logs for missing environment variables
+**Power BI Issues:**
+- Enable service principal in Power BI tenant settings
+- Add service principal to workspace with Member role
+- Update workspace/report IDs in frontend/.env
 
 ## License
 

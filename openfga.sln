@@ -1,0 +1,48 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "backend", "backend", "{1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MenuApi", "backend\MenuApi\MenuApi.csproj", "{F87C74CF-D9F2-D65F-57E0-A42D8FC5A0EC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MenuApi (1)", "MenuApi (1)", "{671BD87D-B9A8-C92D-2553-3A6C8AA2A26A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "obj", "obj", "{539A53FC-8E41-8A89-A506-BA9AC220A8AF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Debug", "Debug", "{30FC2B39-D37B-ECAD-DEFE-41426DCCD16F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "net8.0", "net8.0", "{3724ACD0-6D71-7520-75B6-3FDBAE800076}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkerExtensions", "backend\MenuApi\obj\Debug\net8.0\WorkerExtensions\WorkerExtensions.csproj", "{23D300BA-C769-BFAC-99C6-B799CC99E8EA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F87C74CF-D9F2-D65F-57E0-A42D8FC5A0EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F87C74CF-D9F2-D65F-57E0-A42D8FC5A0EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F87C74CF-D9F2-D65F-57E0-A42D8FC5A0EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F87C74CF-D9F2-D65F-57E0-A42D8FC5A0EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23D300BA-C769-BFAC-99C6-B799CC99E8EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23D300BA-C769-BFAC-99C6-B799CC99E8EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23D300BA-C769-BFAC-99C6-B799CC99E8EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23D300BA-C769-BFAC-99C6-B799CC99E8EA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F87C74CF-D9F2-D65F-57E0-A42D8FC5A0EC} = {1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}
+		{671BD87D-B9A8-C92D-2553-3A6C8AA2A26A} = {1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}
+		{539A53FC-8E41-8A89-A506-BA9AC220A8AF} = {671BD87D-B9A8-C92D-2553-3A6C8AA2A26A}
+		{30FC2B39-D37B-ECAD-DEFE-41426DCCD16F} = {539A53FC-8E41-8A89-A506-BA9AC220A8AF}
+		{3724ACD0-6D71-7520-75B6-3FDBAE800076} = {30FC2B39-D37B-ECAD-DEFE-41426DCCD16F}
+		{23D300BA-C769-BFAC-99C6-B799CC99E8EA} = {3724ACD0-6D71-7520-75B6-3FDBAE800076}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D519BAB7-D77E-4881-953D-176FC7FE6053}
+	EndGlobalSection
+EndGlobal

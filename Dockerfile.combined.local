@@ -1,0 +1,64 @@
+# Multi-stage Dockerfile for LOCAL DEVELOPMENT on Apple Silicon
+# Builds for native arm64 architecture (no emulation)
+# Build: podman build -f Dockerfile.combined.local -t menu-app-combined .
+
+# Stage 1: Build OpenFGA for native architecture (arm64 on M1/M2/M3)
+FROM golang:1.24-alpine AS openfga-builder
+WORKDIR /build
+
+# Install build dependencies
+RUN apk add --no-cache git
+
+# Copy OpenFGA source code
+COPY openfga-fork/ .
+
+# Build OpenFGA for native architecture
+RUN CGO_ENABLED=0 go build -o /build/openfga ./cmd/openfga
+
+# Stage 2: Build .NET application
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS dotnet-build
+WORKDIR /src
+
+COPY backend/MenuApi/MenuApi.csproj .
+RUN dotnet restore
+
+COPY backend/MenuApi/ .
+RUN dotnet build -c Release -o /app/build
+RUN dotnet publish -c Release -o /app/publish
+
+# Stage 3: Final image with both OpenFGA and .NET Functions
+FROM mcr.microsoft.com/azure-functions/dotnet-isolated:4-dotnet-isolated8.0
+
+# Install jq for JSON parsing
+RUN apt-get update && \
+    apt-get install -y jq && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy custom OpenFGA binary from builder stage
+COPY --from=openfga-builder /build/openfga /usr/local/bin/openfga
+RUN chmod +x /usr/local/bin/openfga
+
+# Copy .NET application
+WORKDIR /home/site/wwwroot
+COPY --from=dotnet-build /app/publish .
+
+# Copy OpenFGA configuration
+COPY openfga-config /openfga-config
+
+# Copy startup script
+COPY backend/MenuApi/start.sh /start.sh
+RUN chmod +x /start.sh
+
+# Environment variables
+ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
+    AzureFunctionsJobHost__Logging__Console__IsEnabled=true \
+    OPENFGA_API_URL=http://localhost:8080 \
+    OPENFGA_DATASTORE_ENGINE=sqlserver \
+    OPENFGA_LOG_FORMAT=json
+
+# Expose ports
+EXPOSE 80 8080
+
+# Use custom startup script to run both OpenFGA and Functions
+ENTRYPOINT ["/start.sh"]

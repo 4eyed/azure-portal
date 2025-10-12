@@ -1,0 +1,96 @@
+.menu-group {
+  margin-bottom: 0.5rem;
+}
+
+.menu-group-header-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.menu-group-header-container:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.menu-group-header {
+  flex: 1;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.menu-group-icon {
+  font-size: 1rem;
+}
+
+.menu-group-name {
+  flex: 1;
+}
+
+.menu-group-toggle {
+  font-size: 0.75rem;
+}
+
+.menu-group-actions {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0 0.5rem;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.action-btn:hover {
+  color: white;
+}
+
+.menu-group-items {
+  padding: 0 0 0.5rem 0;
+}
+
+.add-menu-item {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 0.75rem 1rem;
+  margin: 0.25rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.add-menu-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.add-menu-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.menu-item-form-container {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 0.5rem 1rem;
+}

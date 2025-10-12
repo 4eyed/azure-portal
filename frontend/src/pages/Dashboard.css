@@ -1,0 +1,13 @@
+.dashboard {
+  padding: 2rem;
+}
+
+.dashboard h2 {
+  margin-top: 0;
+  color: #333;
+}
+
+.dashboard p {
+  color: #666;
+  line-height: 1.6;
+}

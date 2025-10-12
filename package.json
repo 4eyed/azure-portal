@@ -6,15 +6,19 @@
   "scripts": {
     "dev": "concurrently -n container,frontend -c blue,green \"npm run container\" \"npm run frontend\"",
     "dev:native": "concurrently -n openfga,backend,frontend -c blue,yellow,green \"npm run openfga\" \"npm run backend\" \"npm run frontend\"",
+    "dev:watch": "concurrently -n openfga,backend,frontend -c blue,yellow,green \"npm run openfga\" \"npm run backend:watch\" \"npm run frontend\"",
     "container": "bash scripts/run-container-local.sh",
     "frontend": "cd frontend && npm run dev",
     "backend": "bash scripts/start-backend.sh",
+    "backend:watch": "bash scripts/watch-backend.sh",
     "openfga": "bash scripts/start-openfga.sh",
     "stop": "bash scripts/stop-all.sh",
+    "clean": "bash scripts/clean-images.sh",
     "install-all": "npm install && cd frontend && npm install"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "nodemon": "^3.1.9"
   },
   "engines": {
     "node": ">=18.0.0"

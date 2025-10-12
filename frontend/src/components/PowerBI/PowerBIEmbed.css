@@ -1,0 +1,31 @@
+.powerbi-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.powerbi-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.powerbi-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.powerbi-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #d32f2f;
+  font-size: 1.1rem;
+  padding: 2rem;
+  text-align: center;
+}

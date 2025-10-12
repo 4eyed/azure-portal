@@ -75,11 +75,10 @@ echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}✅ Backend starting...${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo -e "  API: http://localhost:7071/api"
-echo -e "  Test: curl http://localhost:7071/api/menu?user=alice"
+echo -e "  Health: curl http://localhost:7071/api/health"
+echo -e "  Test: curl 'http://localhost:7071/api/menu-structure?user=alice'"
 echo ""
 
-# Clean WorkerExtensions if it exists (causes "multiple projects" error)
-rm -rf obj/Debug/net8.0/WorkerExtensions 2>/dev/null || true
-
-# Just run func start - it handles everything
+# Start Azure Functions - it will auto-build on startup
+# The updated runtime handles everything correctly now
 func start --port 7071
