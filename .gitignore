@@ -28,5 +28,6 @@ openfga-fork/*
 
 # Secrets and credentials
 .env.azure-sql
+.env.openfga-local
 .env
 *.env

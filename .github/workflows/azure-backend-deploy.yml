@@ -154,6 +154,13 @@ jobs:
             --docker-registry-server-user ${{ secrets.ACR_USERNAME }} \
             --docker-registry-server-password ${{ secrets.ACR_PASSWORD }}
 
+      - name: Extract service principal credentials from AZURE_CREDENTIALS
+        id: sp-creds
+        run: |
+          echo "client_id=$(echo '${{ secrets.AZURE_CREDENTIALS }}' | jq -r .clientId)" >> $GITHUB_OUTPUT
+          echo "client_secret=$(echo '${{ secrets.AZURE_CREDENTIALS }}' | jq -r .clientSecret)" >> $GITHUB_OUTPUT
+          echo "tenant_id=$(echo '${{ secrets.AZURE_CREDENTIALS }}' | jq -r .tenantId)" >> $GITHUB_OUTPUT
+
       - name: Configure Function App settings
         run: |
           az functionapp config appsettings set \
@@ -171,9 +178,8 @@ jobs:
               "OPENFGA_DATASTORE_URI=${{ secrets.OPENFGA_DATASTORE_URI }}" \
               "OPENFGA_LOG_FORMAT=json" \
               "DOTNET_CONNECTION_STRING=${{ secrets.DOTNET_CONNECTION_STRING }}" \
-              "AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}" \
-              "AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" \
-              "AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}" \
+              "AZURE_TENANT_ID=${{ steps.sp-creds.outputs.tenant_id }}" \
+              "AZURE_CLIENT_ID=${{ steps.sp-creds.outputs.client_id }}" \
               "AZURE_FRONTEND_CLIENT_ID=${{ secrets.AZURE_FRONTEND_CLIENT_ID }}" \
               "DEPLOYMENT_SHA=${{ github.sha }}" \
               "DEPLOYMENT_TIME=${{ github.event.head_commit.timestamp }}"

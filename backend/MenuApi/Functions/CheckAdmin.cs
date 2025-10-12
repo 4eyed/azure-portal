@@ -36,6 +36,9 @@ public class CheckAdmin
     {
         try
         {
+            // Extract SQL token from request header and store in AsyncLocal context
+            req.ExtractAndStoreSqlToken(_logger);
+
             // Manually validate JWT token and populate HttpContext.User
             var principal = await _jwtValidator.ValidateTokenAsync(req);
             if (principal != null && req.HttpContext != null)

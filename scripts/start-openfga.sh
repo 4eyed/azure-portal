@@ -22,20 +22,36 @@ if [ ! -f "$OPENFGA_BIN" ]; then
     exit 1
 fi
 
-# Get connection string from local.settings.json
-CONNECTION_STRING=$(cat "$PROJECT_ROOT/backend/MenuApi/local.settings.json" | grep -o '"DOTNET_CONNECTION_STRING": *"[^"]*"' | sed 's/"DOTNET_CONNECTION_STRING": *"//' | sed 's/"$//')
+# Get OpenFGA connection string
+# Priority: 1) .env.openfga-local file (recommended for local dev), 2) environment variable
+if [ -f "$PROJECT_ROOT/.env.openfga-local" ]; then
+    echo -e "${BLUE}📄 Loading OpenFGA config from .env.openfga-local${NC}"
+    OPENFGA_DATASTORE_URI=$(grep "^OPENFGA_DATASTORE_URI=" "$PROJECT_ROOT/.env.openfga-local" | sed 's/OPENFGA_DATASTORE_URI=//' | sed 's/"//g')
 
-if [ -z "$CONNECTION_STRING" ]; then
-    echo -e "${RED}❌ ERROR: Could not find DOTNET_CONNECTION_STRING in backend/MenuApi/local.settings.json${NC}"
+    if [[ "$OPENFGA_DATASTORE_URI" == *":"*"@"* ]]; then
+        echo -e "${YELLOW}🔑 Using password-based authentication (local dev workaround)${NC}"
+    else
+        echo -e "${GREEN}🔐 Using Azure AD authentication (passwordless)${NC}"
+    fi
+elif [ -n "$OPENFGA_DATASTORE_URI" ]; then
+    echo -e "${GREEN}✅ Using OPENFGA_DATASTORE_URI from environment${NC}"
+else
+    echo -e "${RED}❌ ERROR: No OpenFGA connection string found${NC}"
+    echo -e "${YELLOW}💡 Create .env.openfga-local file with:${NC}"
+    echo -e '   OPENFGA_DATASTORE_URI="sqlserver://user:pass@server?database=db&encrypt=true"'
+    echo -e ""
+    echo -e "${YELLOW}   OR set OPENFGA_DATASTORE_URI environment variable${NC}"
     exit 1
 fi
 
-# Convert .NET connection string to OpenFGA format (sqlserver://)
-# Extract components and rebuild
-OPENFGA_DATASTORE_URI=$(echo "$CONNECTION_STRING" | sed 's/Server=\([^;]*\);Database=\([^;]*\);User Id=\([^;]*\);Password=\([^;]*\);.*/sqlserver:\/\/\3:\4@\1?database=\2\&encrypt=true/')
+if [ -z "$OPENFGA_DATASTORE_URI" ]; then
+    echo -e "${RED}❌ ERROR: OPENFGA_DATASTORE_URI is empty${NC}"
+    exit 1
+fi
 
 echo -e "${GREEN}📋 Configuration:${NC}"
-echo -e "  Database: Azure SQL (from local.settings.json)"
+echo -e "  Database: Azure SQL"
+echo -e "  Connection: $(echo $OPENFGA_DATASTORE_URI | sed 's/:[^@]*@/:****@/')"
 echo -e "  Port: 8080"
 echo ""
 

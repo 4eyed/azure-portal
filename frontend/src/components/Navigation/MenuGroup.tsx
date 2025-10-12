@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useMsal } from '@azure/msal-react';
 import { MenuItem } from './MenuItem';
 import { MenuItemForm } from '../Admin/MenuItemForm';
 import { useMenu } from '../../contexts/MenuContext';
@@ -31,6 +32,7 @@ export function MenuGroup({ group, isAdminMode }: MenuGroupProps) {
   const [loading, setLoading] = useState(false);
   const { reloadMenu } = useMenu();
   const { user } = useAuth();
+  const { instance } = useMsal();
 
   const handleNewMenuItem = async (formData: any) => {
     if (!user) return;
@@ -39,6 +41,7 @@ export function MenuGroup({ group, isAdminMode }: MenuGroupProps) {
     try {
       const username = user.username || 'alice';
       await menuClient.createMenuItem(
+        instance,
         {
           name: formData.name,
           icon: formData.icon,

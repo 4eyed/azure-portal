@@ -3,6 +3,44 @@ import { PublicClientApplication } from '@azure/msal-browser';
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 /**
+ * Get SQL Database access token for the authenticated user
+ */
+async function getSqlToken(msalInstance: PublicClientApplication): Promise<string | null> {
+  const accounts = msalInstance.getAllAccounts();
+
+  if (accounts.length === 0) {
+    return null;
+  }
+
+  try {
+    // Request token for SQL Database scope
+    const response = await msalInstance.acquireTokenSilent({
+      scopes: ['https://database.windows.net//.default'],
+      account: accounts[0],
+    });
+
+    console.log('✅ SQL Database token acquired');
+    return response.accessToken;
+  } catch (error) {
+    console.warn('⚠️ Failed to get SQL token silently, trying popup:', error);
+
+    // Try interactive popup as fallback
+    try {
+      const response = await msalInstance.acquireTokenPopup({
+        scopes: ['https://database.windows.net//.default'],
+        account: accounts[0],
+      });
+
+      console.log('✅ SQL Database token acquired via popup');
+      return response.accessToken;
+    } catch (popupError) {
+      console.error('❌ Failed to get SQL token:', popupError);
+      return null;
+    }
+  }
+}
+
+/**
  * Get authentication headers with Bearer token for API calls
  */
 export async function getAuthHeaders(msalInstance: PublicClientApplication): Promise<HeadersInit> {
@@ -16,43 +54,57 @@ export async function getAuthHeaders(msalInstance: PublicClientApplication): Pro
   }
 
   try {
-    // For single-page apps calling their own backend, we use the idToken
-    // The idToken contains user info and roles claims from Azure AD
-    const response = await msalInstance.acquireTokenSilent({
+    // Get idToken for backend authentication
+    const authResponse = await msalInstance.acquireTokenSilent({
       scopes: ['openid', 'profile', 'email'],
       account: accounts[0],
     });
 
-    console.group('✅ Token acquired for API calls');
-    console.log('Account:', response.account?.name);
-    console.log('OID:', response.account?.localAccountId);
-    console.log('Using idToken (contains roles claim)');
+    // Get SQL-scoped token for database access
+    const sqlToken = await getSqlToken(msalInstance);
+
+    console.group('✅ Tokens acquired for API calls');
+    console.log('Account:', authResponse.account?.name);
+    console.log('OID:', authResponse.account?.localAccountId);
+    console.log('idToken: Using for backend auth (contains roles claim)');
+    console.log('SQL Token:', sqlToken ? '✅ Acquired' : '❌ Not available');
     console.groupEnd();
 
-    // Use idToken which contains the roles claim from App Registration
-    const token = response.idToken;
-
-    return {
-      'Authorization': `Bearer ${token}`,
+    const headers: HeadersInit = {
+      'Authorization': `Bearer ${authResponse.idToken}`,
       'Content-Type': 'application/json',
     };
+
+    // Add SQL token if available
+    if (sqlToken) {
+      headers['X-SQL-Token'] = sqlToken;
+    }
+
+    return headers;
   } catch (error) {
     console.error('❌ Failed to get token:', error);
 
     // Try interactive popup as fallback
     try {
-      const response = await msalInstance.acquireTokenPopup({
+      const authResponse = await msalInstance.acquireTokenPopup({
         scopes: ['openid', 'profile', 'email'],
         account: accounts[0],
       });
 
-      console.log('✅ Token acquired via popup');
-      const token = response.idToken;
+      const sqlToken = await getSqlToken(msalInstance);
 
-      return {
-        'Authorization': `Bearer ${token}`,
+      console.log('✅ Tokens acquired via popup');
+
+      const headers: HeadersInit = {
+        'Authorization': `Bearer ${authResponse.idToken}`,
         'Content-Type': 'application/json',
       };
+
+      if (sqlToken) {
+        headers['X-SQL-Token'] = sqlToken;
+      }
+
+      return headers;
     } catch (popupError) {
       console.error('❌ Failed to get token via popup:', popupError);
       return {

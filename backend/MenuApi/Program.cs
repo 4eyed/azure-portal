@@ -18,6 +18,9 @@ var host = new HostBuilder()
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
 
+        // Enable HttpContext access in Azure Functions Isolated Worker
+        services.AddHttpContextAccessor();
+
         // Configure JWT Bearer Authentication for local dev (with MSAL token from frontend)
         // In production, Azure Static Web Apps handles auth via X-MS-CLIENT-PRINCIPAL header
         var tenantId = context.Configuration["AZURE_TENANT_ID"];

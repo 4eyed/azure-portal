@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef, ReactNode } from 'react';
+import { useMsal } from '@azure/msal-react';
 import { useAuth } from '../auth/useAuth';
+import { apiGet } from '../services/apiClient';
 
 // Use relative /api path for production (linked backend) or full URL for local dev
 const API_URL = import.meta.env.VITE_API_URL || '/api';
@@ -39,6 +41,7 @@ const MenuContext = createContext<MenuContextValue | undefined>(undefined);
 
 export function MenuProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const { instance } = useMsal();
   const [menuGroups, setMenuGroups] = useState<MenuGroupData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,15 +64,14 @@ export function MenuProvider({ children }: { children: ReactNode }) {
       const username = user.username || 'alice';
       // In production, X-MS-CLIENT-PRINCIPAL header is automatically injected
       // In local dev, pass user as query param
-      const url = import.meta.env.DEV
-        ? `${API_URL}/menu-structure?user=${username}`
-        : `${API_URL}/menu-structure`;
+      const endpoint = import.meta.env.DEV
+        ? `/menu-structure?user=${username}`
+        : `/menu-structure`;
 
-      console.log('Fetching menu structure from:', url);
+      console.log('Fetching menu structure from:', endpoint);
 
-      const response = await fetch(url, {
-        credentials: 'include', // Include cookies for authentication
-      });
+      // Use apiGet helper to include authentication headers (Authorization + X-SQL-Token)
+      const response = await apiGet(instance, endpoint);
 
       if (!response.ok) {
         throw new Error(`Failed to load menu: ${response.statusText}`);
@@ -86,7 +88,7 @@ export function MenuProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       fetchInProgressRef.current = false;
     }
-  }, [user]);
+  }, [user, instance]);
 
   // Load menu on initial mount when user is available
   useEffect(() => {

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useMsal } from '@azure/msal-react';
 import { MenuGroup } from '../Navigation/MenuGroup';
 import { GroupForm, GroupFormData } from '../Admin/GroupForm';
 import { useAdminMode } from '../../hooks/useAdminMode';
@@ -9,6 +10,7 @@ import './Sidebar.css';
 
 export function Sidebar() {
   const { user } = useAuth();
+  const { instance } = useMsal();
   const { isAdminMode, canBeAdmin, loading: adminLoading, toggleAdminMode } = useAdminMode();
   const { menuGroups, reloadMenu } = useMenu();
   const [searchQuery, setSearchQuery] = useState('');
@@ -20,6 +22,7 @@ export function Sidebar() {
     try {
       const username = user.username || 'alice';
       await menuClient.createMenuGroup(
+        instance,
         {
           name: formData.name,
           icon: formData.icon,

@@ -1,4 +1,5 @@
 using MenuApi.Infrastructure;
+using MenuApi.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -30,6 +31,9 @@ public class GetMenuStructure
     {
         try
         {
+            // Extract SQL token from request header and store in AsyncLocal context
+            req.ExtractAndStoreSqlToken(_logger);
+
             // Extract user ID from X-MS-CLIENT-PRINCIPAL header (injected by Azure Static Web Apps)
             var userId = _claimsParser.GetUserId(req);
 

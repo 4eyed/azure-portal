@@ -1,25 +1,20 @@
-// Use relative /api path for production (linked backend) or full URL for local dev
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+import { PublicClientApplication } from '@azure/msal-browser';
+import { apiGet, apiPost, apiPut, apiDelete } from '../apiClient';
 
 // Debug logging
 console.group('📡 Menu API Client Configuration');
-console.log('API URL:', API_URL);
 console.log('Mode:', import.meta.env.MODE);
 console.log('Is Dev:', import.meta.env.DEV);
 console.log('Will use query params:', import.meta.env.DEV ? 'Yes (local dev)' : 'No (production, uses X-MS-CLIENT-PRINCIPAL header)');
 console.groupEnd();
 
-// In production with linked backend, VITE_API_URL should be undefined or '/api'
-// In local dev, VITE_API_URL should be 'http://localhost:7071/api'
-
 // Helper to add query params only in dev mode
-function buildUrl(path: string, userId?: string): string {
-  const base = `${API_URL}${path}`;
+function buildPath(path: string, userId?: string): string {
   // In local dev, pass userId as query param. In production, Azure Static Web Apps handles auth.
   if (import.meta.env.DEV && userId) {
-    return `${base}?user=${encodeURIComponent(userId)}`;
+    return `${path}?user=${encodeURIComponent(userId)}`;
   }
-  return base;
+  return path;
 }
 
 export interface MenuItemData {
@@ -55,17 +50,8 @@ export interface MenuGroupData {
 }
 
 export const menuClient = {
-  baseUrl: API_URL,
-
-  async createMenuItem(data: MenuItemData, userId: string) {
-    const response = await fetch(buildUrl('/menu-items', userId), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(data),
-    });
+  async createMenuItem(msalInstance: PublicClientApplication, data: MenuItemData, userId: string) {
+    const response = await apiPost(msalInstance, buildPath('/menu-items', userId), data);
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: response.statusText }));
@@ -75,15 +61,8 @@ export const menuClient = {
     return response.json();
   },
 
-  async updateMenuItem(id: number, data: MenuItemData, userId: string) {
-    const response = await fetch(buildUrl(`/menu-items/${id}`, userId), {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(data),
-    });
+  async updateMenuItem(msalInstance: PublicClientApplication, id: number, data: MenuItemData, userId: string) {
+    const response = await apiPut(msalInstance, buildPath(`/menu-items/${id}`, userId), data);
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: response.statusText }));
@@ -93,11 +72,8 @@ export const menuClient = {
     return response.json();
   },
 
-  async deleteMenuItem(id: number, userId: string) {
-    const response = await fetch(buildUrl(`/menu-items/${id}`, userId), {
-      method: 'DELETE',
-      credentials: 'include',
-    });
+  async deleteMenuItem(msalInstance: PublicClientApplication, id: number, userId: string) {
+    const response = await apiDelete(msalInstance, buildPath(`/menu-items/${id}`, userId));
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: response.statusText }));
@@ -107,20 +83,13 @@ export const menuClient = {
     return response.ok;
   },
 
-  async toggleMenuItemVisibility(id: number, item: MenuItemData, userId: string) {
+  async toggleMenuItemVisibility(msalInstance: PublicClientApplication, id: number, item: MenuItemData, userId: string) {
     const updated = { ...item, isVisible: !item.isVisible };
-    return this.updateMenuItem(id, updated, userId);
+    return this.updateMenuItem(msalInstance, id, updated, userId);
   },
 
-  async createMenuGroup(data: MenuGroupData, userId: string) {
-    const response = await fetch(buildUrl('/menu-groups', userId), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(data),
-    });
+  async createMenuGroup(msalInstance: PublicClientApplication, data: MenuGroupData, userId: string) {
+    const response = await apiPost(msalInstance, buildPath('/menu-groups', userId), data);
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: response.statusText }));
@@ -130,15 +99,8 @@ export const menuClient = {
     return response.json();
   },
 
-  async updateMenuGroup(id: number, data: MenuGroupData, userId: string) {
-    const response = await fetch(buildUrl(`/menu-groups/${id}`, userId), {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(data),
-    });
+  async updateMenuGroup(msalInstance: PublicClientApplication, id: number, data: MenuGroupData, userId: string) {
+    const response = await apiPut(msalInstance, buildPath(`/menu-groups/${id}`, userId), data);
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: response.statusText }));
@@ -148,8 +110,8 @@ export const menuClient = {
     return response.json();
   },
 
-  async toggleMenuGroupVisibility(id: number, group: MenuGroupData, userId: string) {
+  async toggleMenuGroupVisibility(msalInstance: PublicClientApplication, id: number, group: MenuGroupData, userId: string) {
     const updated = { ...group, isVisible: !group.isVisible };
-    return this.updateMenuGroup(id, updated, userId);
+    return this.updateMenuGroup(msalInstance, id, updated, userId);
   },
 };

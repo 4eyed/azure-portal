@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
 using MenuApi.Data;
 using MenuApi.Services;
+using MenuApi.Infrastructure;
 using OpenFga.Sdk.Client;
 using OpenFga.Sdk.Configuration;
 
@@ -34,7 +37,8 @@ public static class ServiceCollectionExtensions
             })
             .ValidateOnStart();
 
-        // Register DbContext
+        // Register DbContext with SQL token interceptor
+        // Note: HttpContextAccessor is registered in Program.cs
         services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
         {
             var connectionString = configuration["DOTNET_CONNECTION_STRING"]
@@ -42,12 +46,17 @@ public static class ServiceCollectionExtensions
 
             if (!string.IsNullOrEmpty(connectionString))
             {
-                // Transform connection string to use Managed Identity if it doesn't contain a password
-                // Supports both legacy password-based and modern managed identity authentication
-                connectionString = TransformConnectionStringForManagedIdentity(connectionString);
-                options.UseSqlServer(connectionString);
+                // Remove Authentication parameter - we'll use AccessToken from user's MSAL token instead
+                connectionString = RemoveAuthenticationParameter(connectionString);
+
+                // Add SQL token interceptor to set AccessToken from AsyncLocal context
+                var logger = serviceProvider.GetRequiredService<ILogger<SqlTokenInterceptor>>();
+                var interceptor = new SqlTokenInterceptor(logger);
+
+                options.UseSqlServer(connectionString)
+                    .AddInterceptors(interceptor);
             }
-        });
+        }, ServiceLifetime.Scoped); // Must be Scoped (not Singleton) for per-request SQL tokens
 
         // Register OpenFGA client
         services.AddSingleton<OpenFgaClient>(sp =>
@@ -75,39 +84,17 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Transforms a SQL Server connection string to use Managed Identity authentication
-    /// if it doesn't already contain password credentials.
+    /// Removes Authentication parameter from connection string
+    /// We use AccessToken instead (set by SqlTokenInterceptor from user's MSAL token)
     /// </summary>
-    /// <remarks>
-    /// For Azure SQL Database:
-    /// - If the connection string contains "Password=" or "pwd=", it's left unchanged (legacy mode)
-    /// - Otherwise, adds "Authentication=Active Directory Default" for managed identity auth
-    ///
-    /// Active Directory Default tries authentication in this order:
-    /// 1. Environment variables (for local dev with service principal)
-    /// 2. Managed Identity (for Azure-hosted apps)
-    /// 3. Visual Studio / Azure CLI (for local development)
-    /// </remarks>
-    private static string TransformConnectionStringForManagedIdentity(string connectionString)
+    private static string RemoveAuthenticationParameter(string connectionString)
     {
-        // If connection string already has password, don't modify it (backwards compatibility)
-        if (connectionString.Contains("Password=", StringComparison.OrdinalIgnoreCase) ||
-            connectionString.Contains("pwd=", StringComparison.OrdinalIgnoreCase))
-        {
-            return connectionString;
-        }
-
-        // If already has Authentication parameter, don't modify
-        if (connectionString.Contains("Authentication=", StringComparison.OrdinalIgnoreCase))
-        {
-            return connectionString;
-        }
-
-        // Add managed identity authentication
-        var separator = connectionString.Contains(';') && !connectionString.TrimEnd().EndsWith(';')
-            ? ";"
-            : string.Empty;
-
-        return $"{connectionString}{separator};Authentication=Active Directory Default";
+        // Remove Authentication= parameter and any surrounding semicolons
+        return System.Text.RegularExpressions.Regex.Replace(
+            connectionString,
+            @";?\s*Authentication\s*=\s*[^;]+;?",
+            "",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase
+        ).TrimEnd(';');
     }
 }

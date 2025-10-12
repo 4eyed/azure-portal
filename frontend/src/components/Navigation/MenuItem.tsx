@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useMsal } from '@azure/msal-react';
 import { MenuItemForm, MenuItemFormData } from '../Admin/MenuItemForm';
 import { MenuItemTypeEnum } from '../Admin/TypeSelector';
 import { useMenu } from '../../contexts/MenuContext';
@@ -24,6 +25,7 @@ export function MenuItem({ item, isAdminMode }: MenuItemProps) {
   const [loading, setLoading] = useState(false);
   const { reloadMenu } = useMenu();
   const { user } = useAuth();
+  const { instance } = useMsal();
 
   const handleEdit = () => {
     setShowEditForm(true);
@@ -47,7 +49,7 @@ export function MenuItem({ item, isAdminMode }: MenuItemProps) {
         isVisible: true, // Toggle will be handled by API
       };
 
-      await menuClient.updateMenuItem(item.id, updateData, username);
+      await menuClient.updateMenuItem(instance, item.id, updateData, username);
       await reloadMenu();
     } catch (error) {
       console.error('Error toggling visibility:', error);
@@ -67,7 +69,7 @@ export function MenuItem({ item, isAdminMode }: MenuItemProps) {
     setLoading(true);
     try {
       const username = user.username || 'alice';
-      await menuClient.deleteMenuItem(item.id, username);
+      await menuClient.deleteMenuItem(instance, item.id, username);
       await reloadMenu();
     } catch (error) {
       console.error('Error deleting menu item:', error);
