@@ -14,7 +14,7 @@
     },
     {
       "route": "/api/*",
-      "allowedRoles": ["authenticated"]
+      "allowedRoles": ["anonymous"]
     },
     {
       "route": "/*",
@@ -49,6 +49,6 @@
   "globalHeaders": {
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
-    "Content-Security-Policy": "default-src 'self' https://*.powerbi.com https://*.microsoftonline.com https://*.msauth.net https://*.azurewebsites.net; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.powerbi.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.powerbi.com https://*.microsoftonline.com https://*.msauth.net https://*.azurewebsites.net; img-src 'self' data: https:; frame-src 'self' https://*.powerbi.com;"
+    "Content-Security-Policy": "default-src 'self' https://*.powerbi.com https://*.microsoftonline.com https://*.msauth.net; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.powerbi.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.powerbi.com https://*.microsoftonline.com https://*.msauth.net; img-src 'self' data: https:; frame-src 'self' https://*.powerbi.com;"
   }
 }
