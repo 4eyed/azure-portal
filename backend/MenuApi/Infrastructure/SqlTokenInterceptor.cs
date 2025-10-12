@@ -42,8 +42,10 @@ public class SqlTokenInterceptor : DbConnectionInterceptor
             }
             else
             {
-                _logger.LogWarning(
-                    "❌ No SQL token found in SqlTokenContext. SQL connection will fail without authentication."
+                // In production (Azure), Managed Identity from connection string will be used
+                // In local dev, this would be an error if no SQL token is provided
+                _logger.LogDebug(
+                    "No SQL token in SqlTokenContext - using connection string authentication (Managed Identity in Azure, or error in local dev)"
                 );
             }
         }

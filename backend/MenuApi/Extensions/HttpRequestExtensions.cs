@@ -70,8 +70,8 @@ public static class HttpRequestExtensions
         }
         else
         {
-            logger.LogWarning("❌ No X-SQL-Token header found in request. Available headers: {Headers}",
-                string.Join(", ", req.Headers.Keys));
+            // In production (Azure), no X-SQL-Token is expected - Managed Identity is used
+            logger.LogDebug("No X-SQL-Token header (expected in Azure - using Managed Identity)");
         }
     }
 }

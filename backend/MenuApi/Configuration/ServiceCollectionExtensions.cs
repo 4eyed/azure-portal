@@ -45,10 +45,18 @@ public static class ServiceCollectionExtensions
 
             if (!string.IsNullOrEmpty(connectionString))
             {
-                // Remove Authentication parameter - we'll use AccessToken from user's MSAL token instead
-                connectionString = RemoveAuthenticationParameter(connectionString);
+                // Check if running in Azure
+                var isAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
 
-                // Add SQL token interceptor to set AccessToken from AsyncLocal context
+                // Only remove Authentication parameter in local dev (where we'll use user tokens)
+                // In Azure, keep "Authentication=Active Directory Default" for Managed Identity
+                if (!isAzure)
+                {
+                    connectionString = RemoveAuthenticationParameter(connectionString);
+                }
+
+                // Add SQL token interceptor to set AccessToken from AsyncLocal context (local dev)
+                // In production, this will just pass through and use Managed Identity from connection string
                 var logger = serviceProvider.GetRequiredService<ILogger<SqlTokenInterceptor>>();
                 var interceptor = new SqlTokenInterceptor(logger);
 
