@@ -76,20 +76,26 @@ A full-stack Azure application with hierarchical menu management, Power BI repor
 ## Authorization Model
 
 **Type Definitions**:
-- `user` - Individual users (alice, bob, charlie)
+- `user` - Azure Entra ID users (identified by Object ID / OID)
 - `role` - Permission groups (admin, editor, viewer)
-- `menu_item` - UI elements (dashboard, users, settings, reports)
+- `menu_item` - UI elements (dashboard, reports, settings, etc.)
 
 **Relations**:
-- `role#assignee` - Users assigned to a role
+- `role#assignee` - Users assigned to a role (e.g., `user:{oid}` → `role:admin`)
 - `menu_item#viewer_role` - Roles that can view a menu item
 - `menu_item#viewer` - Computed: users who can view (direct or via role)
 
+**Admin Behavior**:
+- Users assigned to `role:admin` bypass all menu permission checks
+- Admins see ALL menu items regardless of explicit assignments
+- Admins can create/edit/delete menu items and assign users to them
+
 **Example**:
 ```
-user:bob ──assignee──▶ role:viewer ──viewer_role──▶ menu_item:dashboard
-                            │
-                            └─▶ Inherits viewer permission via role
+user:{oid-123} ──assignee──▶ role:admin ──▶ Sees ALL menus (bypass checks)
+user:{oid-456} ──assignee──▶ role:viewer ──viewer_role──▶ menu_item:dashboard
+                                    │
+                                    └─▶ Inherits viewer permission via role
 ```
 
 ## Deployment
@@ -218,6 +224,15 @@ See [RUNNING-THE-APP.md](RUNNING-THE-APP.md) for:
 
 See [AZURE-AD-SETUP.md](AZURE-AD-SETUP.md) for Azure AD configuration details.
 
+### Setting Up Your First Admin User
+After starting the app for the first time, you need to manually assign yourself as an admin.
+See [SETUP-FIRST-ADMIN.md](SETUP-FIRST-ADMIN.md) for detailed steps:
+1. Login with your Entra account
+2. Extract your Entra Object ID from browser console
+3. Add yourself to `role:admin` in OpenFGA using curl
+4. Verify the "Admin mode" toggle appears in the sidebar
+5. Create menu groups and items in Admin Mode
+
 ### Container (Full Stack)
 ```bash
 docker build -f Dockerfile.combined -t menu-app .
@@ -242,20 +257,39 @@ docker run -p 80:80 \
 
 ## Testing
 
-**User Permissions**:
-- **alice** (admin): Dashboard, Users, Settings, Reports
-- **bob** (viewer): Dashboard only
-- **charlie** (editor): Dashboard, Reports
+**Local Testing**:
+1. Start the app: `npm run dev`
+2. Login with your Entra account
+3. Setup first admin user (see [SETUP-FIRST-ADMIN.md](SETUP-FIRST-ADMIN.md))
+4. Enable Admin Mode and create test menus
+5. Verify admin sees all menus without explicit assignments
+6. Test non-admin user access (should see no menus until assigned)
 
-**Smoke Test**:
+**API Smoke Tests**:
 ```bash
-curl "https://func-menu-app-18436.azurewebsites.net/api/menu?user=bob"
-# Expected: {"menuItems":[{"id":1,"name":"Dashboard",...}]}
+# Check admin status (requires authentication in production)
+curl "http://localhost:7071/api/admin/check"
+# Expected: {"isAdmin":true,"userId":"..."}
+
+# Get menu structure (filtered by user permissions)
+curl "http://localhost:7071/api/menu-structure?user=YOUR_OID"
+# Expected: {"menuGroups":[...]} (empty if no menus created yet)
+
+# Health check
+curl "http://localhost:7071/api/health"
+# Expected: {"status":"healthy","timestamp":"..."}
 ```
+
+**Authorization Testing**:
+- Admins bypass permission checks and see ALL menu items
+- Regular users only see menu items they're explicitly assigned to
+- Use OpenFGA API to verify tuple relationships
 
 ## Documentation
 
 - [CLAUDE.md](CLAUDE.md) - This file (project overview)
+- [SETUP-FIRST-ADMIN.md](SETUP-FIRST-ADMIN.md) - Setting up your first admin user
+- [RUNNING-THE-APP.md](RUNNING-THE-APP.md) - Local development setup
 - [PORTAL-README.md](PORTAL-README.md) - Detailed setup guide
 - [IMPLEMENTATION-SUMMARY.md](IMPLEMENTATION-SUMMARY.md) - Technical implementation details
 - [AZURE-AD-SETUP.md](AZURE-AD-SETUP.md) - Azure AD configuration and credentials

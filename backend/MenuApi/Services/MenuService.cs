@@ -31,15 +31,22 @@ public class MenuService : IMenuService
 
         var result = new MenuStructureResponse();
 
-        // Collect all visible menu item names for batch authorization check
-        var allMenuItemNames = groups
-            .SelectMany(g => g.MenuItems.Where(i => i.IsVisible))
-            .Select(i => i.Name)
-            .Distinct()
-            .ToList();
+        // Check if user is admin - admins see ALL menu items regardless of permissions
+        var isAdmin = await _authService.IsAdmin(userId);
 
-        // Perform batch authorization check to avoid N+1 queries to OpenFGA
-        var authorizationResults = await _authService.CanViewMenuItems(userId, allMenuItemNames);
+        // Collect all visible menu item names for batch authorization check (skip for admins)
+        Dictionary<string, bool> authorizationResults = new();
+        if (!isAdmin)
+        {
+            var allMenuItemNames = groups
+                .SelectMany(g => g.MenuItems.Where(i => i.IsVisible))
+                .Select(i => i.Name)
+                .Distinct()
+                .ToList();
+
+            // Perform batch authorization check to avoid N+1 queries to OpenFGA
+            authorizationResults = await _authService.CanViewMenuItems(userId, allMenuItemNames);
+        }
 
         foreach (var group in groups)
         {
@@ -47,8 +54,10 @@ public class MenuService : IMenuService
 
             foreach (var item in group.MenuItems.Where(i => i.IsVisible).OrderBy(i => i.DisplayOrder))
             {
-                // Check if user can view this menu item using pre-fetched authorization results
-                if (authorizationResults.TryGetValue(item.Name, out var canView) && canView)
+                // Admins bypass permission checks and see all items
+                bool canView = isAdmin || (authorizationResults.TryGetValue(item.Name, out var allowed) && allowed);
+
+                if (canView)
                 {
                     accessibleItems.Add(new MenuItemDto
                     {

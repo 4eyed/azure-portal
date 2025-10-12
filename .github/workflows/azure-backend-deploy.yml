@@ -168,6 +168,10 @@ jobs:
               "OPENFGA_DATASTORE_URI=${{ secrets.OPENFGA_DATASTORE_URI }}" \
               "OPENFGA_LOG_FORMAT=json" \
               "DOTNET_CONNECTION_STRING=${{ secrets.DOTNET_CONNECTION_STRING }}" \
+              "AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}" \
+              "AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" \
+              "AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}" \
+              "AZURE_FRONTEND_CLIENT_ID=${{ secrets.AZURE_FRONTEND_CLIENT_ID }}" \
               "DEPLOYMENT_SHA=${{ github.sha }}" \
               "DEPLOYMENT_TIME=${{ github.event.head_commit.timestamp }}"
 

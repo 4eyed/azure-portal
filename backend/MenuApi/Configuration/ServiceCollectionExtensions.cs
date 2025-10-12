@@ -66,6 +66,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPowerBIService, PowerBIService>();
         services.AddScoped<IAuthorizationService, AuthorizationService>();
         services.AddScoped<IClaimsPrincipalParser, ClaimsPrincipalParser>();
+        services.AddScoped<IJwtTokenValidator, JwtTokenValidator>();
 
         return services;
     }

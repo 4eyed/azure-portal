@@ -1,9 +1,12 @@
-using System.Net;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using OpenFga.Sdk.Client;
 using OpenFga.Sdk.Client.Model;
+using MenuApi.Services;
+using MenuApi.Extensions;
+using MenuApi.Infrastructure;
 
 namespace MenuApi.Functions;
 
@@ -11,37 +14,69 @@ public class AddUserPermission
 {
     private readonly ILogger<AddUserPermission> _logger;
     private readonly OpenFgaClient _fgaClient;
+    private readonly IAuthorizationService _authService;
+    private readonly IClaimsPrincipalParser _claimsParser;
 
-    public AddUserPermission(ILogger<AddUserPermission> logger, OpenFgaClient fgaClient)
+    public AddUserPermission(
+        ILogger<AddUserPermission> logger,
+        OpenFgaClient fgaClient,
+        IAuthorizationService authService,
+        IClaimsPrincipalParser claimsParser)
     {
         _logger = logger;
         _fgaClient = fgaClient;
+        _authService = authService;
+        _claimsParser = claimsParser;
     }
 
     [Function("AddUserPermission")]
-    public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "admin/add-user-permission")] HttpRequestData req)
+    public async Task<IActionResult> Run(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/assign-user-permission")] HttpRequest req)
     {
         _logger.LogInformation("Adding user permission to OpenFGA");
 
         try
         {
-            // Parse request body
-            var body = await req.ReadFromJsonAsync<AddUserPermissionRequest>();
-
-            if (body == null || string.IsNullOrEmpty(body.UserId) || string.IsNullOrEmpty(body.Role))
+            // Extract authenticated user ID
+            var adminUserId = req.GetAuthenticatedUserId(_claimsParser);
+            if (string.IsNullOrEmpty(adminUserId))
             {
-                var badRequest = req.CreateResponse(HttpStatusCode.BadRequest);
-                await badRequest.WriteAsJsonAsync(new { error = "UserId and Role are required" });
-                return badRequest;
+                return new CorsObjectResult(new { error = "User is not authenticated" })
+                {
+                    StatusCode = StatusCodes.Status401Unauthorized
+                };
             }
 
-            // Add tuple to OpenFGA
+            // Check if user is admin
+            if (!req.IsAdmin(_claimsParser) && !await _authService.IsAdmin(adminUserId))
+            {
+                return new CorsObjectResult(new { error = "Only admins can assign user permissions" })
+                {
+                    StatusCode = StatusCodes.Status403Forbidden
+                };
+            }
+
+            // Parse request body
+            var body = await new StreamReader(req.Body).ReadToEndAsync();
+            var request = System.Text.Json.JsonSerializer.Deserialize<AddUserPermissionRequest>(body, new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (request == null || string.IsNullOrEmpty(request.UserId) || string.IsNullOrEmpty(request.Relation) || string.IsNullOrEmpty(request.Object))
+            {
+                return new CorsObjectResult(new { error = "UserId, Relation, and Object are required" })
+                {
+                    StatusCode = StatusCodes.Status400BadRequest
+                };
+            }
+
+            // Add tuple to OpenFGA (userId should be Entra OID)
             var tuple = new ClientTupleKey
             {
-                User = $"user:{body.UserId}",
-                Relation = "assignee",
-                Object = $"role:{body.Role}"
+                User = $"user:{request.UserId}",
+                Relation = request.Relation,
+                Object = request.Object
             };
 
             await _fgaClient.Write(new ClientWriteRequest
@@ -49,13 +84,12 @@ public class AddUserPermission
                 Writes = new List<ClientTupleKey> { tuple }
             });
 
-            _logger.LogInformation($"Successfully added permission: user:{body.UserId} -> role:{body.Role}");
+            _logger.LogInformation($"Successfully added permission: {tuple.User} -> {tuple.Relation} -> {tuple.Object}");
 
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(new
+            return new CorsObjectResult(new
             {
                 success = true,
-                message = $"User {body.UserId} assigned to role {body.Role}",
+                message = $"User {request.UserId} assigned {request.Relation} on {request.Object}",
                 tuple = new
                 {
                     user = tuple.User,
@@ -63,15 +97,14 @@ public class AddUserPermission
                     @object = tuple.Object
                 }
             });
-            return response;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error adding user permission");
-
-            var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-            await errorResponse.WriteAsJsonAsync(new { error = ex.Message });
-            return errorResponse;
+            return new CorsObjectResult(new { error = ex.Message })
+            {
+                StatusCode = StatusCodes.Status500InternalServerError
+            };
         }
     }
 }
@@ -79,5 +112,6 @@ public class AddUserPermission
 public class AddUserPermissionRequest
 {
     public string UserId { get; set; } = string.Empty;
-    public string Role { get; set; } = string.Empty;
+    public string Relation { get; set; } = string.Empty;
+    public string Object { get; set; } = string.Empty;
 }

@@ -9,7 +9,7 @@ import './Sidebar.css';
 
 export function Sidebar() {
   const { user } = useAuth();
-  const { isAdminMode, toggleAdminMode } = useAdminMode();
+  const { isAdminMode, canBeAdmin, loading: adminLoading, toggleAdminMode } = useAdminMode();
   const { menuGroups, reloadMenu } = useMenu();
   const [searchQuery, setSearchQuery] = useState('');
   const [showNewGroup, setShowNewGroup] = useState(false);
@@ -79,21 +79,28 @@ export function Sidebar() {
       </nav>
 
       <div className="sidebar-footer">
-        <div className="admin-toggle">
-          <label>
-            <span>Admin mode</span>
-            <input
-              type="checkbox"
-              checked={isAdminMode}
-              onChange={toggleAdminMode}
-            />
-          </label>
-        </div>
+        {!adminLoading && canBeAdmin && (
+          <div className="admin-toggle">
+            <label>
+              <span>Admin mode</span>
+              <input
+                type="checkbox"
+                checked={isAdminMode}
+                onChange={toggleAdminMode}
+              />
+            </label>
+          </div>
+        )}
         <div className="user-profile">
-          <div className="user-avatar">EE</div>
+          <div className="user-avatar">
+            {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
+          </div>
           <div className="user-details">
-            <div className="user-name">{user?.name || 'Eric Entenman'}</div>
-            <div className="user-email">{user?.username || 'eentenman@jetstream.com'}</div>
+            <div className="user-name">
+              {user?.name || user?.username || 'User'}
+              {canBeAdmin && <span className="admin-badge"> (Admin)</span>}
+            </div>
+            <div className="user-email">{user?.username || ''}</div>
           </div>
         </div>
       </div>

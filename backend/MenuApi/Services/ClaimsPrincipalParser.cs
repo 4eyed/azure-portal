@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
@@ -31,18 +32,78 @@ public class ClaimsPrincipalParser : IClaimsPrincipalParser
 
     public string? GetUserId(HttpRequest request)
     {
+        // Priority 1: Check JWT claims (local dev with Authorization Bearer token)
+        if (request.HttpContext?.User?.Identity?.IsAuthenticated == true)
+        {
+            var oidClaim = request.HttpContext.User.FindFirst("oid")
+                ?? request.HttpContext.User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")
+                ?? request.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (oidClaim != null && !string.IsNullOrEmpty(oidClaim.Value))
+            {
+                return oidClaim.Value;
+            }
+        }
+
+        // Priority 2: Check X-MS-CLIENT-PRINCIPAL header (Azure SWA production)
         var principal = ParseClientPrincipal(request);
-        return principal?.UserId;
+
+        // Use Entra Object ID (OID) from claims for stable user identity
+        if (principal?.Claims != null)
+        {
+            var oidClaim = principal.Claims.FirstOrDefault(c =>
+                c.Typ?.Equals("oid", StringComparison.OrdinalIgnoreCase) == true ||
+                c.Typ?.Equals("http://schemas.microsoft.com/identity/claims/objectidentifier", StringComparison.OrdinalIgnoreCase) == true);
+
+            if (!string.IsNullOrEmpty(oidClaim?.Val))
+            {
+                return oidClaim.Val;
+            }
+        }
+
+        // Priority 3: Fallback to UserId field (email or username)
+        if (!string.IsNullOrEmpty(principal?.UserId))
+        {
+            return principal.UserId;
+        }
+
+        // Priority 4: Fallback to UserDetails
+        return principal?.UserDetails;
     }
 
     public string[] GetUserRoles(HttpRequest request)
     {
+        // Priority 1: Check JWT claims (local dev with Authorization Bearer token)
+        if (request.HttpContext?.User?.Identity?.IsAuthenticated == true)
+        {
+            var roles = request.HttpContext.User.Claims
+                .Where(c => c.Type == "roles" || c.Type == ClaimTypes.Role)
+                .Select(c => c.Value)
+                .ToArray();
+
+            if (roles.Length > 0)
+            {
+                return roles;
+            }
+        }
+
+        // Priority 2: Check X-MS-CLIENT-PRINCIPAL header (Azure SWA production)
         var principal = ParseClientPrincipal(request);
         return principal?.UserRoles ?? Array.Empty<string>();
     }
 
     public bool HasRole(HttpRequest request, string role)
     {
+        // Priority 1: Check JWT claims using standard ASP.NET Core method
+        if (request.HttpContext?.User?.Identity?.IsAuthenticated == true)
+        {
+            if (request.HttpContext.User.IsInRole(role))
+            {
+                return true;
+            }
+        }
+
+        // Priority 2: Check X-MS-CLIENT-PRINCIPAL header
         var roles = GetUserRoles(request);
         return roles.Contains(role, StringComparer.OrdinalIgnoreCase);
     }
