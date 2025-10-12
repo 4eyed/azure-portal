@@ -26,24 +26,9 @@
     "rewrite": "/index.html",
     "exclude": ["/assets/*", "/images/*.{png,jpg,gif,svg}", "/css/*", "/api/*", "/*.{js,css,png,jpg,gif,svg,ico,json,txt}"]
   },
-  "auth": {
-    "identityProviders": {
-      "azureActiveDirectory": {
-        "registration": {
-          "openIdIssuer": "https://login.microsoftonline.com/{TENANT_ID}/v2.0",
-          "clientIdSettingName": "AZURE_CLIENT_ID",
-          "clientSecretSettingName": "AZURE_CLIENT_SECRET"
-        },
-        "login": {
-          "loginParameters": ["scope=openid profile email"]
-        }
-      }
-    }
-  },
   "responseOverrides": {
     "401": {
-      "redirect": "/.auth/login/aad",
-      "statusCode": 302
+      "statusCode": 401
     }
   },
   "platform": {
