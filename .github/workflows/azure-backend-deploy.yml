@@ -213,7 +213,7 @@ jobs:
           while [ $ELAPSED -lt $TIMEOUT ]; do
             echo "Attempt $(($ELAPSED / $INTERVAL + 1)) - Elapsed: ${ELAPSED}s..."
 
-            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "${{ steps.get-url.outputs.url }}/api/menu?user=alice" || echo "000")
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "${{ steps.get-url.outputs.url }}/api/health" || echo "000")
 
             if [ "$HTTP_CODE" = "200" ]; then
               echo "✅ Health check passed! (took ${ELAPSED}s)"
