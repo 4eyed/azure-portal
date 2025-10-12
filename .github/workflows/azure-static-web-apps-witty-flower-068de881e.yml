@@ -25,8 +25,8 @@ jobs:
         env:
           # Vite environment variables (must start with VITE_)
           # Using existing GitHub secrets - map to VITE_ prefixed names for build
-          VITE_AZURE_CLIENT_ID: baa611a0-39d1-427b-89b5-d91658c6ce26
-          VITE_AZURE_TENANT_ID: ae372c45-2e81-4d1c-9490-e9ac10250047
+          VITE_AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          VITE_AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           VITE_AZURE_REDIRECT_URI: https://witty-flower-068de881e.2.azurestaticapps.net
           VITE_API_URL: https://func-menu-app-18436.azurewebsites.net/api
         with:
