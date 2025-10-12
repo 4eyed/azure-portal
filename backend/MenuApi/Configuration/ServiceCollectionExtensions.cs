@@ -22,20 +22,19 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Configure options
+        // Note: ValidateOnStart() removed to avoid blocking during Azure Functions cold start
         services.AddOptions<DatabaseOptions>()
             .Configure(options => options.ConnectionString =
                 configuration["DOTNET_CONNECTION_STRING"] ??
                 configuration.GetConnectionString("DefaultConnection") ??
-                string.Empty)
-            .ValidateOnStart();
+                string.Empty);
 
         services.AddOptions<OpenFgaOptions>()
             .Configure(options =>
             {
                 options.ApiUrl = configuration["OPENFGA_API_URL"] ?? "http://localhost:8080";
                 options.StoreId = configuration["OPENFGA_STORE_ID"] ?? string.Empty;
-            })
-            .ValidateOnStart();
+            });
 
         // Register DbContext with SQL token interceptor
         // Note: HttpContextAccessor is registered in Program.cs
