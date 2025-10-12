@@ -22,9 +22,13 @@ jobs:
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
-        # NOTE: Environment variables are configured in Azure Portal (Settings → Environment variables)
-        # The env: block here does NOT work because Azure Static Web Apps runs the build in Azure's environment
-        # See SECURITY-SETUP.md for details on why GitHub Actions env: doesn't transfer to Azure builds
+        env:
+          # Vite build-time environment variables (VITE_ prefix required)
+          # These get baked into the JavaScript bundle during build
+          VITE_AZURE_CLIENT_ID: baa611a0-39d1-427b-89b5-d91658c6ce26
+          VITE_AZURE_TENANT_ID: ae372c45-2e81-4d1c-9490-e9ac10250047
+          VITE_AZURE_REDIRECT_URI: https://witty-flower-068de881e.2.azurestaticapps.net
+          VITE_API_URL: /api
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WITTY_FLOWER_068DE881E }}
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
