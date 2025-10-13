@@ -44,6 +44,7 @@ export function MenuProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fetchInProgressRef = useRef(false);
+  const hasLoadedRef = useRef(false); // Track if we've already loaded once
 
   const reloadMenu = useCallback(async () => {
     if (!user) return;
@@ -84,20 +85,21 @@ export function MenuProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       console.log('Menu structure loaded:', data.menuGroups?.length, 'groups');
       setMenuGroups(data.menuGroups || []);
+      hasLoadedRef.current = true; // Mark as successfully loaded
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load menu';
       setError(message);
       console.error('Error loading menu structure:', err);
-      // Don't allow infinite retries - error state will prevent useEffect from retrying
+      hasLoadedRef.current = true; // Mark as attempted (don't retry errors)
     } finally {
       setLoading(false);
       fetchInProgressRef.current = false;
     }
   }, [user]);
 
-  // Load menu on initial mount when user is available
+  // Load menu on initial mount when user is available - ONLY ONCE
   useEffect(() => {
-    if (user) {
+    if (user && !hasLoadedRef.current && !error) {
       reloadMenu();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
