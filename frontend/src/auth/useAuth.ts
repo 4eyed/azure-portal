@@ -1,20 +1,38 @@
 import { useMsal } from '@azure/msal-react';
+import { useSwaAuth } from './useSwaAuth';
 import { loginRequest, powerBIRequest } from './config';
 
+/**
+ * Authentication hook that combines SWA auth (for authentication)
+ * with MSAL (for token acquisition)
+ *
+ * - Authentication: Handled by Azure Static Web Apps (useSwaAuth)
+ * - Token acquisition: Still uses MSAL for delegated permissions (SQL, Power BI)
+ */
 export function useAuth() {
   const { instance, accounts } = useMsal();
+  const { isAuthenticated, userInfo, loading, logout: swaLogout } = useSwaAuth();
 
   const login = () => {
-    instance.loginRedirect(loginRequest);
+    // In production, SWA handles login automatically
+    // In local dev, MSAL can be used
+    if (import.meta.env.DEV) {
+      instance.loginRedirect(loginRequest);
+    } else {
+      // Redirect to SWA login
+      window.location.href = '/.auth/login/aad';
+    }
   };
 
   const logout = () => {
-    instance.logoutRedirect();
+    // Use SWA logout
+    swaLogout();
   };
 
   const getAccessToken = async (scopes?: string[]) => {
     if (accounts.length === 0) {
-      throw new Error('No authenticated user');
+      console.warn('No MSAL account available for token acquisition');
+      throw new Error('No authenticated MSAL account');
     }
 
     const request = scopes
@@ -44,9 +62,17 @@ export function useAuth() {
     return getAccessToken(powerBIRequest.scopes);
   };
 
+  // Create a user object compatible with existing code
+  const user = userInfo ? {
+    name: userInfo.userDetails,
+    username: userInfo.userId,
+    ...userInfo
+  } : null;
+
   return {
-    isAuthenticated: accounts.length > 0,
-    user: accounts[0] || null,
+    isAuthenticated,
+    user,
+    loading,
     login,
     logout,
     getAccessToken,
