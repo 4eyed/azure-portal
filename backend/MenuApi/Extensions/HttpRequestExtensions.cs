@@ -58,9 +58,21 @@ public static class HttpRequestExtensions
     /// <summary>
     /// Extracts the delegated SQL access token from the request and stores it in an AsyncLocal scope.
     /// Dispose the returned scope when the request handling is finished to clear the token.
+    /// ONLY works in local development - in Azure, managed identity is used via connection string.
     /// </summary>
     public static IDisposable BeginSqlTokenScope(this HttpRequest req, ILogger logger)
     {
+        // Check if running in Azure - if so, don't use delegated tokens
+        var isAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
+
+        if (isAzure)
+        {
+            // In Azure, return empty scope - connection string authentication handles everything
+            logger.LogDebug("Running in Azure - using connection string authentication (no delegated token)");
+            return SqlTokenContext.BeginScope(null);
+        }
+
+        // Local development: Extract X-SQL-Token header for delegated authentication
         string? token = null;
 
         if (req.Headers.TryGetValue(SqlTokenHeaderName, out var headerValue))
@@ -85,8 +97,8 @@ public static class HttpRequestExtensions
         }
         else
         {
-            logger.LogWarning(
-                "Header {Header} not found; database calls will use managed identity or connection string credentials.",
+            logger.LogDebug(
+                "Header {Header} not found; database calls will use configured authentication.",
                 SqlTokenHeaderName);
         }
 
