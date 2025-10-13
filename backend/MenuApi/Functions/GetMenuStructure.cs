@@ -1,4 +1,3 @@
-using MenuApi.Infrastructure;
 using MenuApi.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -31,9 +30,6 @@ public class GetMenuStructure
     {
         try
         {
-            // Extract SQL token from request header and store in AsyncLocal context
-            req.ExtractAndStoreSqlToken(_logger);
-
             // Extract user ID from X-MS-CLIENT-PRINCIPAL header (injected by Azure Static Web Apps)
             var userId = _claimsParser.GetUserId(req);
 
@@ -60,7 +56,10 @@ public class GetMenuStructure
 
             // Add caching headers to reduce API calls (5 minutes cache)
             var response = new CorsObjectResult(result);
-            req.HttpContext.Response.Headers["Cache-Control"] = "private, max-age=300";
+            if (req.HttpContext is not null)
+            {
+                req.HttpContext.Response.Headers["Cache-Control"] = "private, max-age=300";
+            }
 
             return response;
         }

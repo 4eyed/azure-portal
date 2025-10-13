@@ -3,6 +3,7 @@ import { PowerBIEmbed as PowerBIEmbedComponent } from 'powerbi-client-react';
 import { models } from 'powerbi-client';
 import { useAuth } from '../../auth/useAuth';
 import { useMenu } from '../../contexts/MenuContext';
+import { powerBIClient } from '../../services/powerbi/client';
 import './PowerBIEmbed.css';
 
 interface PowerBIEmbedProps {
@@ -10,7 +11,7 @@ interface PowerBIEmbedProps {
 }
 
 export function PowerBIEmbed({ reportId }: PowerBIEmbedProps) {
-  const { isAuthenticated, getPowerBIToken } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { menuGroups } = useMenu();
   const [embedConfig, setEmbedConfig] = useState<models.IReportEmbedConfiguration | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -57,21 +58,16 @@ export function PowerBIEmbed({ reportId }: PowerBIEmbedProps) {
         throw new Error('Power BI workspace and report IDs must be configured');
       }
 
-      // Acquire Azure AD token with Power BI scope (User Owns Data pattern)
-      console.log('Acquiring Power BI token for embed...');
-      const accessToken = await getPowerBIToken();
-      console.log('Token acquired, configuring embed with:', {
-        reportId: actualReportId,
-        workspaceId,
-        embedUrl
-      });
+      console.log('Requesting embed token from API...');
+      const embedToken = await powerBIClient.generateEmbedToken(workspaceId, actualReportId);
+      console.log('Embed token received, configuring report');
 
       setEmbedConfig({
         type: 'report',
         id: actualReportId,
         embedUrl: embedUrl,
-        accessToken: accessToken,
-        tokenType: models.TokenType.Aad, // Use Azure AD token (User Owns Data)
+        accessToken: embedToken.token,
+        tokenType: models.TokenType.Embed,
         settings: {
           panes: {
             filters: {

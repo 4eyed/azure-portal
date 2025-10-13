@@ -1,13 +1,15 @@
+using System;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http;
 using MenuApi.Data;
 using MenuApi.Services;
-using MenuApi.Infrastructure;
 using OpenFga.Sdk.Client;
 using OpenFga.Sdk.Configuration;
+using Azure.Core;
+using Azure.Identity;
 
 namespace MenuApi.Configuration;
 
@@ -36,126 +38,30 @@ public static class ServiceCollectionExtensions
                 options.StoreId = configuration["OPENFGA_STORE_ID"] ?? string.Empty;
             });
 
-        // Register DbContext with SQL token interceptor
-        // Note: HttpContextAccessor is registered in Program.cs
         services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
         {
-            var logger = serviceProvider.GetRequiredService<ILogger<SqlTokenInterceptor>>();
+            var logger = serviceProvider.GetRequiredService<ILogger<ApplicationDbContext>>();
 
-            // Get raw connection string from configuration
-            var rawConnectionString = configuration["DOTNET_CONNECTION_STRING"]
+            var connectionString = configuration["DOTNET_CONNECTION_STRING"]
                 ?? configuration.GetConnectionString("DefaultConnection");
 
-            logger.LogInformation("🔍 ========================================");
-            logger.LogInformation("🔍 DATABASE CONNECTION STRING PROCESSING");
-            logger.LogInformation("🔍 ========================================");
-
-            if (string.IsNullOrEmpty(rawConnectionString))
+            if (string.IsNullOrWhiteSpace(connectionString))
             {
-                logger.LogError("❌ No connection string found in configuration!");
-                logger.LogError("   Checked: DOTNET_CONNECTION_STRING and ConnectionStrings:DefaultConnection");
-                return;
+                throw new InvalidOperationException("A SQL connection string was not provided. Set DOTNET_CONNECTION_STRING or ConnectionStrings:DefaultConnection in app settings.");
             }
 
-            // Log RAW value from configuration (before any processing)
-            var rawSanitized = string.Join(";", rawConnectionString.Split(';')
-                .Select(s =>
-                {
-                    if (s.Contains("Password", StringComparison.OrdinalIgnoreCase) ||
-                        s.Contains("Pwd", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return s.Split('=')[0] + "=***REDACTED***";
-                    }
-                    return s;
-                }));
+            var sanitized = string.Join(";", connectionString
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .Where(part => !part.StartsWith("Password", StringComparison.OrdinalIgnoreCase) &&
+                               !part.StartsWith("Pwd", StringComparison.OrdinalIgnoreCase)));
 
-            logger.LogInformation("🔍 RAW Connection String (from config):");
-            logger.LogInformation("   Length: {Length} chars", rawConnectionString.Length);
-            logger.LogInformation("   Value: {ConnectionString}", rawSanitized);
+            logger.LogInformation("Configuring SQL Server DbContext with managed identity connection string: {ConnectionString}", sanitized);
 
-            // Check for Authentication parameter BEFORE processing
-            var hasAuthBefore = rawConnectionString.Contains("Authentication", StringComparison.OrdinalIgnoreCase);
-            logger.LogInformation("   Contains 'Authentication': {HasAuth}", hasAuthBefore ? "YES" : "NO");
-
-            if (hasAuthBefore)
-            {
-                var authMatch = System.Text.RegularExpressions.Regex.Match(
-                    rawConnectionString,
-                    @"Authentication\s*=\s*([^;]+)",
-                    System.Text.RegularExpressions.RegexOptions.IgnoreCase
-                );
-                if (authMatch.Success)
-                {
-                    logger.LogInformation("   Authentication value: {AuthValue}", authMatch.Groups[1].Value);
-                }
-            }
-
-            // Check if running in Azure
-            var isAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
-            logger.LogInformation("🔍 Environment Detection:");
-            logger.LogInformation("   IsAzure: {IsAzure}", isAzure);
-            logger.LogInformation("   WEBSITE_SITE_NAME: {SiteName}",
-                Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") ?? "[not set]");
-
-            var connectionString = rawConnectionString;
-
-            // Only remove Authentication parameter in local dev (where we'll use user tokens)
-            // In Azure, keep "Authentication=Active Directory Default" for Managed Identity
-            if (!isAzure)
-            {
-                logger.LogInformation("🔍 Local Development Mode:");
-                logger.LogInformation("   Removing 'Authentication' parameter (will use user SQL tokens instead)");
-                connectionString = RemoveAuthenticationParameter(connectionString);
-            }
-            else
-            {
-                logger.LogInformation("🔍 Azure Production Mode:");
-                logger.LogInformation("   Keeping 'Authentication' parameter (will use Managed Identity)");
-            }
-
-            // Log FINAL connection string (after processing)
-            var finalSanitized = string.Join(";", connectionString.Split(';')
-                .Where(s => !s.Contains("Password", StringComparison.OrdinalIgnoreCase) &&
-                           !s.Contains("Pwd", StringComparison.OrdinalIgnoreCase)));
-
-            var hasAuthAfter = connectionString.Contains("Authentication", StringComparison.OrdinalIgnoreCase);
-
-            logger.LogInformation("🔍 FINAL Connection String (for EF Core):");
-            logger.LogInformation("   Length: {Length} chars", connectionString.Length);
-            logger.LogInformation("   Value: {ConnectionString}", finalSanitized);
-            logger.LogInformation("   Contains 'Authentication': {HasAuth}", hasAuthAfter ? "YES" : "NO");
-
-            if (!isAzure && hasAuthAfter)
-            {
-                logger.LogWarning("⚠️  WARNING: Authentication parameter still present in local mode!");
-                logger.LogWarning("   This should have been removed by RemoveAuthenticationParameter()");
-            }
-
-            if (isAzure && !hasAuthAfter)
-            {
-                logger.LogError("❌ ERROR: Authentication parameter missing in Azure mode!");
-                logger.LogError("   Managed Identity requires 'Authentication=Active Directory Default'");
-                logger.LogError("   Check GitHub Secret: DOTNET_CONNECTION_STRING");
-            }
-
-            logger.LogInformation("🔍 ========================================");
-
-            // Configure EF Core with SQL Server
             options.UseSqlServer(connectionString);
+        }, ServiceLifetime.Scoped);
 
-            // Only add SQL token interceptor in LOCAL DEV mode
-            // In Azure, Managed Identity is used via connection string (no interceptor needed)
-            if (!isAzure)
-            {
-                logger.LogInformation("🔍 Registering SqlTokenInterceptor for local dev (user SQL tokens)");
-                var interceptor = new SqlTokenInterceptor(logger);
-                options.AddInterceptors(interceptor);
-            }
-            else
-            {
-                logger.LogInformation("🔍 Using Managed Identity authentication (no interceptor needed)");
-            }
-        }, ServiceLifetime.Scoped); // Must be Scoped (not Singleton) for per-request SQL tokens
+        // Expose DefaultAzureCredential so managed identity can be reused (Power BI, etc.)
+        services.AddSingleton<TokenCredential>(_ => new DefaultAzureCredential());
 
         // Register OpenFGA client
         services.AddSingleton<OpenFgaClient>(sp =>
@@ -177,23 +83,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPowerBIService, PowerBIService>();
         services.AddScoped<IAuthorizationService, AuthorizationService>();
         services.AddScoped<IClaimsPrincipalParser, ClaimsPrincipalParser>();
-        services.AddScoped<IJwtTokenValidator, JwtTokenValidator>();
 
         return services;
-    }
-
-    /// <summary>
-    /// Removes Authentication parameter from connection string
-    /// We use AccessToken instead (set by SqlTokenInterceptor from user's MSAL token)
-    /// </summary>
-    private static string RemoveAuthenticationParameter(string connectionString)
-    {
-        // Remove Authentication= parameter and any surrounding semicolons
-        return System.Text.RegularExpressions.Regex.Replace(
-            connectionString,
-            @";?\s*Authentication\s*=\s*[^;]+;?",
-            "",
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase
-        ).TrimEnd(';');
     }
 }

@@ -6,8 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MenuApi.Data;
-using MenuApi.Infrastructure;
-using MenuApi.Extensions;
 using System.Diagnostics;
 
 namespace MenuApi.Functions;
@@ -38,9 +36,6 @@ public class HealthCheck
         var verbose = req.Query["verbose"].ToString()?.ToLower() == "true";
 
         _logger.LogInformation("Health check requested (verbose: {Verbose})", verbose);
-
-        // Extract SQL token from request header (for local dev)
-        req.ExtractAndStoreSqlToken(_logger);
 
         if (!verbose)
         {
@@ -133,11 +128,15 @@ public class HealthCheck
 
                 if (builder.TryGetValue("Authentication", out var auth))
                 {
-                    authMethod = auth.ToString() ?? "unknown";
+                    authMethod = auth?.ToString() ?? "unknown";
                 }
-                else if (!string.IsNullOrEmpty(builder.Password))
+                else if (!string.IsNullOrEmpty(builder.UserID))
                 {
                     authMethod = "SQL Authentication";
+                }
+                else
+                {
+                    authMethod = "Managed Identity";
                 }
             }
 

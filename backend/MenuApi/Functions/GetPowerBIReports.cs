@@ -52,20 +52,9 @@ public class GetPowerBIReports
                 });
             }
 
-            // Extract the user's access token from the Authorization header
-            var authHeader = req.Headers["Authorization"].ToString();
-            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
-            {
-                return new UnauthorizedObjectResult(new ErrorResponse
-                {
-                    Error = "Authorization header is required"
-                });
-            }
-
             _logger.LogInformation("Fetching Power BI reports for workspace: {WorkspaceId}", workspaceId);
 
-            var userToken = authHeader.Substring("Bearer ".Length).Trim();
-            var reports = await _powerBIService.GetReports(workspaceId, userToken);
+            var reports = await _powerBIService.GetReportsAsync(workspaceId);
 
             return new OkObjectResult(reports);
         }

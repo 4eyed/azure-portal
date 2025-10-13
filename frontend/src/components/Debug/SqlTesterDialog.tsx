@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useMsal } from '@azure/msal-react';
 import { apiGet } from '../../services/apiClient';
 import './SqlTesterDialog.css';
 
@@ -27,7 +26,6 @@ interface HealthCheckResult {
 }
 
 export function SqlTesterDialog({ isOpen, onClose }: SqlTesterDialogProps) {
-  const { instance } = useMsal();
   const [activeTab, setActiveTab] = useState<'quick' | 'detailed' | 'health' | 'config'>('quick');
   const [testing, setTesting] = useState(false);
   const [quickResult, setQuickResult] = useState<any>(null);
@@ -42,7 +40,7 @@ export function SqlTesterDialog({ isOpen, onClose }: SqlTesterDialogProps) {
     setQuickResult(null);
 
     try {
-      const response = await apiGet(instance, '/test-sql');
+      const response = await apiGet('/test-sql');
       const data = await response.json();
       setQuickResult(data);
     } catch (error) {
@@ -52,13 +50,12 @@ export function SqlTesterDialog({ isOpen, onClose }: SqlTesterDialogProps) {
     }
   };
 
-  const handleDetailedTest = async (testHardcoded = false) => {
+  const handleDetailedTest = async () => {
     setTesting(true);
     setDetailedResult(null);
 
     try {
-      const url = testHardcoded ? '/debug/sql-test?testHardcoded=true' : '/debug/sql-test';
-      const response = await apiGet(instance, url);
+      const response = await apiGet('/debug/sql-test');
       const data = await response.json();
       setDetailedResult(data);
     } catch (error) {
@@ -77,7 +74,7 @@ export function SqlTesterDialog({ isOpen, onClose }: SqlTesterDialogProps) {
     setHealthResult(null);
 
     try {
-      const response = await apiGet(instance, '/health?verbose=true');
+      const response = await apiGet('/health?verbose=true');
       const data = await response.json();
       setHealthResult(data);
     } catch (error) {
@@ -95,7 +92,7 @@ export function SqlTesterDialog({ isOpen, onClose }: SqlTesterDialogProps) {
     setConfigResult(null);
 
     try {
-      const response = await apiGet(instance, '/debug/config');
+      const response = await apiGet('/debug/config');
       const data = await response.json();
       setConfigResult(data);
     } catch (error) {
@@ -165,9 +162,11 @@ export function SqlTesterDialog({ isOpen, onClose }: SqlTesterDialogProps) {
                   {quickResult.environment?.websiteSiteName && (
                     <li><strong>Site:</strong> {quickResult.environment.websiteSiteName}</li>
                   )}
-                  <li><strong>Auth Mode:</strong> {quickResult.environment?.hasSqlToken ? 'User Token' : 'Managed Identity'}</li>
-                  {quickResult.environment?.sqlTokenLength && (
-                    <li><strong>Token Length:</strong> {quickResult.environment.sqlTokenLength} chars</li>
+                  {quickResult.environment?.identityEndpoint && (
+                    <li><strong>IDENTITY_ENDPOINT:</strong> {quickResult.environment.identityEndpoint}</li>
+                  )}
+                  {quickResult.environment?.msiEndpoint && (
+                    <li><strong>MSI_ENDPOINT:</strong> {quickResult.environment.msiEndpoint}</li>
                   )}
                 </ul>
               </div>
@@ -187,32 +186,18 @@ export function SqlTesterDialog({ isOpen, onClose }: SqlTesterDialogProps) {
 
   const renderDetailedTest = () => (
     <div className="test-panel">
-      <div className="test-header">
-        <h3>Detailed SQL Connectivity Test</h3>
-        <p>Tests 6 different connection methods with comprehensive diagnostics</p>
-      </div>
+        <div className="test-header">
+          <h3>Detailed SQL Connectivity Test</h3>
+          <p>Runs managed identity diagnostics, EF Core probes, and direct SQL checks</p>
+        </div>
 
       <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
         <button
           className="test-button primary"
-          onClick={() => handleDetailedTest(false)}
+          onClick={handleDetailedTest}
           disabled={testing}
         >
           {testing ? '⏳ Testing...' : '▶️ Run Detailed Test'}
-        </button>
-
-        <button
-          className="test-button"
-          onClick={() => handleDetailedTest(true)}
-          disabled={testing}
-          style={{
-            background: '#ff9800',
-            color: 'white',
-            boxShadow: '0 4px 12px rgba(255, 152, 0, 0.3)'
-          }}
-          title="Tests with hardcoded SQL username/password from .env.azure-sql"
-        >
-          {testing ? '⏳ Testing...' : '🧪 Test with Hardcoded SQL Auth'}
         </button>
       </div>
 
@@ -237,17 +222,11 @@ export function SqlTesterDialog({ isOpen, onClose }: SqlTesterDialogProps) {
         <h4>What This Tests:</h4>
         <ul>
           <li>✅ Managed Identity authentication (Azure production)</li>
-          <li>✅ Username/Password authentication (fallback)</li>
-          <li>✅ User SQL Token (local dev style)</li>
+          <li>✅ Connection string parsing and sanitization</li>
           <li>✅ Direct SQL query execution</li>
           <li>✅ EF Core DbContext operations</li>
-          <li>✅ OpenFGA connectivity</li>
+          <li>✅ Managed identity access token acquisition</li>
         </ul>
-        <h4 style={{ marginTop: '16px' }}>🧪 Hardcoded SQL Auth Test:</h4>
-        <p style={{ fontSize: '13px', color: '#666', margin: '8px 0 0 0' }}>
-          Uses embedded sqladmin credentials to test if network/firewall is working.
-          If this succeeds but Managed Identity fails, the issue is with Azure AD authentication setup, not connectivity.
-        </p>
       </div>
     </div>
   );
@@ -393,7 +372,7 @@ export function SqlTesterDialog({ isOpen, onClose }: SqlTesterDialogProps) {
           <li>🔍 OpenFGA configuration</li>
           <li>🔍 Azure Functions settings</li>
           <li>🔍 Process information</li>
-          <li>🔍 SQL Token context</li>
+          <li>🔍 Managed identity environment variables</li>
         </ul>
       </div>
     </div>

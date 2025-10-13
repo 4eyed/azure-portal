@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef, ReactNode } from 'react';
-import { useMsal } from '@azure/msal-react';
 import { useAuth } from '../auth/useAuth';
 import { apiGet } from '../services/apiClient';
 
@@ -41,7 +40,6 @@ const MenuContext = createContext<MenuContextValue | undefined>(undefined);
 
 export function MenuProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const { instance } = useMsal();
   const [menuGroups, setMenuGroups] = useState<MenuGroupData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,8 +68,8 @@ export function MenuProvider({ children }: { children: ReactNode }) {
 
       console.log('Fetching menu structure from:', endpoint);
 
-      // Use apiGet helper to include authentication headers (Authorization + X-SQL-Token)
-      const response = await apiGet(instance, endpoint);
+      // Static Web Apps automatically forwards identity headers; apiGet preserves SWA cookies
+      const response = await apiGet(endpoint);
 
       if (!response.ok) {
         throw new Error(`Failed to load menu: ${response.statusText}`);
@@ -88,7 +86,7 @@ export function MenuProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       fetchInProgressRef.current = false;
     }
-  }, [user, instance]);
+  }, [user]);
 
   // Load menu on initial mount when user is available
   useEffect(() => {

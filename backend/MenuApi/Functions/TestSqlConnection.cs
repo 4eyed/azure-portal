@@ -2,10 +2,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using MenuApi.Data;
 using MenuApi.Extensions;
-using MenuApi.Infrastructure;
 
 namespace MenuApi.Functions;
 
@@ -31,10 +31,6 @@ public class TestSqlConnection
     {
         try
         {
-            // Extract SQL token from request header and store in AsyncLocal context
-            // This allows the DbContext to authenticate using the user's SQL token
-            req.ExtractAndStoreSqlToken(_logger);
-
             _logger.LogInformation("Testing SQL Server connectivity...");
 
             // Test 1: Get database name
@@ -68,9 +64,24 @@ public class TestSqlConnection
 
             // Get connection string details (safe - no password)
             var connectionString = _dbContext.Database.GetConnectionString();
-            var serverName = connectionString?.Split(';')
-                .FirstOrDefault(s => s.StartsWith("Server=", StringComparison.OrdinalIgnoreCase))
-                ?.Split('=').LastOrDefault();
+            var builder = string.IsNullOrEmpty(connectionString)
+                ? null
+                : new SqlConnectionStringBuilder(connectionString);
+
+            var serverName = builder?.DataSource;
+            var authMethod = "Managed Identity";
+
+            if (builder != null)
+            {
+                if (builder.TryGetValue("Authentication", out var authValue) && authValue is not null)
+                {
+                    authMethod = authValue.ToString() ?? "Managed Identity";
+                }
+                else if (!string.IsNullOrEmpty(builder.UserID))
+                {
+                    authMethod = "SQL Authentication";
+                }
+            }
 
             var response = new
             {
@@ -87,14 +98,14 @@ public class TestSqlConnection
                     isAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME")),
                     websiteSiteName = Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") ?? "not-set",
                     azureFunctionsEnvironment = Environment.GetEnvironmentVariable("AZURE_FUNCTIONS_ENVIRONMENT") ?? "not-set",
-                    hasSqlToken = !string.IsNullOrEmpty(SqlTokenContext.SqlToken),
-                    sqlTokenLength = SqlTokenContext.SqlToken?.Length ?? 0
+                    identityEndpoint = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("IDENTITY_ENDPOINT")) ? "not-set" : "set",
+                    msiEndpoint = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MSI_ENDPOINT")) ? "not-set" : "set"
                 },
                 connectionInfo = new
                 {
                     server = serverName ?? "unknown",
                     database = databaseName ?? "unknown",
-                    authMethod = string.IsNullOrEmpty(SqlTokenContext.SqlToken) ? "Managed Identity / Connection String" : "User SQL Token",
+                    authMethod = authMethod,
                     connectionOpen = _dbContext.Database.CanConnect(),
                     efCoreVersion = "8.0",
                     providerName = _dbContext.Database.ProviderName

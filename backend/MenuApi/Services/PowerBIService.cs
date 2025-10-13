@@ -1,53 +1,56 @@
+using Azure.Core;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using Microsoft.PowerBI.Api;
 using Microsoft.PowerBI.Api.Models;
 using Microsoft.Rest;
 using MenuApi.Models.DTOs;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace MenuApi.Services;
 
 /// <summary>
-/// Implementation of Power BI service using delegated user permissions
+/// Implementation of Power BI service that authenticates using the Function App's managed identity
+/// or other DefaultAzureCredential-supported identities.
 /// </summary>
 public class PowerBIService : IPowerBIService
 {
-    private PowerBIClient GetClient(string accessToken)
+    private static readonly Uri PowerBiApiRoot = new("https://api.powerbi.com/");
+    private static readonly string[] PowerBiScopes = ["https://analysis.windows.net/powerbi/api/.default"];
+
+    private readonly TokenCredential _credential;
+    private readonly ILogger<PowerBIService> _logger;
+    private readonly string? _overrideApiUrl;
+
+    public PowerBIService(TokenCredential credential, ILogger<PowerBIService> logger, IConfiguration configuration)
     {
-        var credentials = new TokenCredentials(accessToken, "Bearer");
-        return new PowerBIClient(credentials);
+        _credential = credential ?? throw new ArgumentNullException(nameof(credential));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _overrideApiUrl = configuration["POWERBI_API_URL"];
     }
 
-    public async Task<List<PowerBIWorkspaceResponse>> GetWorkspaces(string userAccessToken)
+    public async Task<List<PowerBIWorkspaceResponse>> GetWorkspacesAsync()
     {
-        try
-        {
-            using var client = GetClient(userAccessToken);
-            var groups = await client.Groups.GetGroupsAsync();
+        using var client = await CreateClientAsync();
+        var groups = await client.Groups.GetGroupsAsync();
 
-            return groups.Value.Select(g => new PowerBIWorkspaceResponse
-            {
-                Id = g.Id.ToString(),
-                Name = g.Name
-            }).ToList();
-        }
-        catch (Microsoft.Rest.HttpOperationException ex)
+        return groups.Value.Select(g => new PowerBIWorkspaceResponse
         {
-            var errorMessage = $"Power BI API returned {ex.Response?.StatusCode}: {ex.Response?.Content}";
-            throw new InvalidOperationException(
-                $"Failed to fetch Power BI workspaces. {errorMessage}. " +
-                "Please ensure: (1) User has Power BI Pro/Premium license, " +
-                "(2) User has access to at least one workspace, " +
-                "(3) Token has correct Power BI scopes.", ex);
-        }
+            Id = g.Id.ToString(),
+            Name = g.Name
+        }).ToList();
     }
 
-    public async Task<List<PowerBIReportResponse>> GetReports(string workspaceId, string userAccessToken)
+    public async Task<List<PowerBIReportResponse>> GetReportsAsync(string workspaceId)
     {
-        if (string.IsNullOrEmpty(workspaceId))
+        if (string.IsNullOrWhiteSpace(workspaceId))
         {
             throw new ArgumentException("Workspace ID is required", nameof(workspaceId));
         }
 
-        using var client = GetClient(userAccessToken);
+        using var client = await CreateClientAsync();
         var reports = await client.Reports.GetReportsInGroupAsync(Guid.Parse(workspaceId));
 
         return reports.Value.Select(r => new PowerBIReportResponse
@@ -58,31 +61,36 @@ public class PowerBIService : IPowerBIService
         }).ToList();
     }
 
-    public async Task<EmbedTokenResponse> GenerateEmbedToken(string workspaceId, string reportId, string userAccessToken)
+    public async Task<EmbedTokenResponse> GenerateEmbedTokenAsync(string workspaceId, string reportId)
     {
-        if (string.IsNullOrEmpty(workspaceId) || string.IsNullOrEmpty(reportId))
+        if (string.IsNullOrWhiteSpace(workspaceId) || string.IsNullOrWhiteSpace(reportId))
         {
-            throw new ArgumentException("Workspace ID and Report ID are required");
+            throw new ArgumentException("WorkspaceId and ReportId are required to generate an embed token.");
         }
 
-        // Use the user's access token for embed token generation
-        using var client = GetClient(userAccessToken);
-
-        var generateTokenRequest = new GenerateTokenRequest(
-            accessLevel: "View",
-            datasetId: null
-        );
+        using var client = await CreateClientAsync();
+        var generateTokenRequest = new GenerateTokenRequest(accessLevel: "View");
 
         var embedToken = await client.Reports.GenerateTokenInGroupAsync(
             Guid.Parse(workspaceId),
             Guid.Parse(reportId),
-            generateTokenRequest
-        );
+            generateTokenRequest);
 
         return new EmbedTokenResponse
         {
             Token = embedToken.Token,
             Expiration = embedToken.Expiration
         };
+    }
+
+    private async Task<PowerBIClient> CreateClientAsync()
+    {
+        var token = await _credential.GetTokenAsync(new TokenRequestContext(PowerBiScopes), CancellationToken.None);
+        _logger.LogInformation("Acquired Power BI token using managed identity. Expires at {Expiration}", token.ExpiresOn);
+
+        var credentials = new TokenCredentials(token.Token, "Bearer");
+        var baseUri = string.IsNullOrEmpty(_overrideApiUrl) ? PowerBiApiRoot : new Uri(_overrideApiUrl);
+
+        return new PowerBIClient(baseUri, credentials);
     }
 }

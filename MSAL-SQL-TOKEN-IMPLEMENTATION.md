@@ -1,5 +1,8 @@
 # MSAL Token-Based SQL Authentication Implementation
 
+> [!NOTE]
+> This document describes a superseded prototype. The application now relies on Azure Static Web Apps authentication headers and managed identity connections from the Functions backend. Browser-acquired SQL tokens are no longer used.
+
 ## Overview
 
 Successfully implemented passwordless SQL authentication where the frontend's MSAL token is used to authenticate SQL Database connections in the backend. This eliminates the need for SQL passwords and enables user-level database access for audit logging and row-level security.
