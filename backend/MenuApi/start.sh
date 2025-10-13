@@ -39,14 +39,19 @@ if [ -z "$OPENFGA_STORE_ID" ]; then
     echo "⚠️  WARNING: OPENFGA_STORE_ID not set! Will try to create/find store dynamically."
 fi
 
-# Run database migrations
-echo "Running OpenFGA database migrations..."
-openfga migrate \
-    --datastore-engine ${OPENFGA_DATASTORE_ENGINE:-sqlserver} \
-    --datastore-uri "$OPENFGA_DATASTORE_URI" \
-    || {
-        echo "WARNING: Migration may have already been run or encountered an error"
-    }
+# Run database migrations (skip by default in production to speed up startup)
+if [ "${SKIP_MIGRATIONS}" = "true" ]; then
+    echo "⏩ Skipping database migrations (SKIP_MIGRATIONS=true)"
+    echo "   Set SKIP_MIGRATIONS=false to run migrations on next deployment"
+else
+    echo "Running OpenFGA database migrations..."
+    openfga migrate \
+        --datastore-engine ${OPENFGA_DATASTORE_ENGINE:-sqlserver} \
+        --datastore-uri "$OPENFGA_DATASTORE_URI" \
+        || {
+            echo "WARNING: Migration may have already been run or encountered an error"
+        }
+fi
 
 # Start OpenFGA in the background with SQL Server
 echo "Starting OpenFGA on port 8080 with SQL Server backend..."
@@ -59,7 +64,7 @@ OPENFGA_PID=$!
 # Wait for OpenFGA to be ready (reduced to 2 minutes for faster failure detection)
 echo "Waiting for OpenFGA to be ready (max 2 minutes for SQL migrations)..."
 OPENFGA_TIMEOUT=120  # 2 minutes (safer margin for Azure's 230s timeout)
-OPENFGA_INTERVAL=5   # Check every 5 seconds
+OPENFGA_INTERVAL=2   # Check every 2 seconds (faster detection)
 ELAPSED=0
 
 while [ $ELAPSED -lt $OPENFGA_TIMEOUT ]; do
@@ -162,42 +167,8 @@ if [ -f /openfga-config/model.json ]; then
         fi
     fi
 
-    # Load seed data if exists and we have a valid model
-    if [ -f /openfga-config/seed-data.json ]; then
-        if [ -n "$AUTH_MODEL_ID" ] && [ "$AUTH_MODEL_ID" != "null" ]; then
-            echo "Loading seed data..."
-            TUPLES=$(jq -c '.tuples' /openfga-config/seed-data.json)
-
-            echo "📤 Writing $(echo $TUPLES | jq '. | length') tuples to store..."
-
-            WRITE_RESPONSE=$(curl -s -X POST "http://localhost:8080/stores/$STORE_ID/write" \
-                -H "Content-Type: application/json" \
-                -d "{\"writes\":{\"tuple_keys\":$TUPLES},\"authorization_model_id\":\"$AUTH_MODEL_ID\"}")
-
-            echo "Seed data response: $WRITE_RESPONSE"
-
-            # Check if write was successful
-            if echo "$WRITE_RESPONSE" | jq -e '.code' > /dev/null 2>&1; then
-                ERROR_CODE=$(echo "$WRITE_RESPONSE" | jq -r '.code')
-                ERROR_MSG=$(echo "$WRITE_RESPONSE" | jq -r '.message')
-
-                # If error is about tuples already existing, that's okay
-                if [[ "$ERROR_MSG" == *"already exists"* ]] || [[ "$ERROR_MSG" == *"duplicate"* ]]; then
-                    echo "⚠️  Seed data may already exist: $ERROR_MSG"
-                    echo "✅ Continuing with existing data"
-                else
-                    echo "⚠️  WARNING: Failed to write seed data"
-                    echo "Error code: $ERROR_CODE"
-                    echo "Error message: $ERROR_MSG"
-                    echo "Continuing anyway - manual data initialization may be required"
-                fi
-            else
-                echo "✅ Seed data loaded successfully"
-            fi
-        else
-            echo "⚠️  Skipping seed data load - no valid authorization model ID"
-        fi
-    fi
+    # Seed data loading removed (legacy code)
+    # Authorization relationships are now managed via the API, not seed files
 else
     echo "No OpenFGA configuration found, skipping initialization"
 fi

@@ -177,6 +177,7 @@ jobs:
               "OPENFGA_DATASTORE_ENGINE=sqlserver" \
               "OPENFGA_DATASTORE_URI=${{ secrets.OPENFGA_DATASTORE_URI }}" \
               "OPENFGA_LOG_FORMAT=json" \
+              "SKIP_MIGRATIONS=true" \
               "DOTNET_CONNECTION_STRING=${{ secrets.DOTNET_CONNECTION_STRING }}" \
               "AZURE_TENANT_ID=${{ steps.sp-creds.outputs.tenant_id }}" \
               "AZURE_CLIENT_ID=${{ steps.sp-creds.outputs.client_id }}" \
@@ -205,9 +206,9 @@ jobs:
         continue-on-error: true
         id: smoke-test
         run: |
-          echo "Testing Function App health (this may take 2-3 minutes on cold start)..."
-          TIMEOUT=300  # 5 minutes total timeout
-          INTERVAL=15  # Check every 15 seconds
+          echo "Testing Function App health (container startup optimized to ~30-60s)..."
+          TIMEOUT=180  # 3 minutes total timeout (reduced from 5 min)
+          INTERVAL=5   # Check every 5 seconds (reduced from 15s for faster feedback)
           ELAPSED=0
 
           while [ $ELAPSED -lt $TIMEOUT ]; do
