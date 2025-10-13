@@ -30,6 +30,8 @@ public class GetMenuStructure
     {
         try
         {
+            using var sqlTokenScope = req.BeginSqlTokenScope(_logger);
+
             // Extract user ID from X-MS-CLIENT-PRINCIPAL header (injected by Azure Static Web Apps)
             var userId = _claimsParser.GetUserId(req);
 

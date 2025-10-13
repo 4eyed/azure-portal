@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { MsalProvider as BaseMsalProvider } from '@azure/msal-react';
-import { PublicClientApplication, EventType } from '@azure/msal-browser';
-import { msalConfig } from './auth/config';
+import { msalInstance } from './auth/msalInstance';
 import { useAuth } from './auth/useAuth';
 import { MenuProvider } from './contexts/MenuContext';
 import { Sidebar } from './components/Layout/Sidebar';
@@ -13,8 +12,6 @@ import { EnvDebugger } from './components/Debug/EnvDebugger';
 import { DevAuthBanner } from './components/Debug/DevAuthBanner';
 import { useDevAuthUpdater } from './auth/useDevAuthUpdater';
 import './App.css';
-
-const msalInstance = new PublicClientApplication(msalConfig);
 
 // Handle redirect promise
 msalInstance.initialize().then(() => {

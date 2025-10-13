@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MenuApi.Data;
+using MenuApi.Extensions;
 using MenuApi.Infrastructure;
 
 namespace MenuApi.Functions;
@@ -44,6 +45,8 @@ public class SqlDebug
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "debug/sql-test")] HttpRequest req)
     {
+        using var sqlTokenScope = req.BeginSqlTokenScope(_logger);
+
         var report = new StringBuilder();
         report.AppendLine("========================================");
         report.AppendLine("SQL Connectivity Diagnostics");
@@ -53,6 +56,7 @@ public class SqlDebug
 
         AppendEnvironmentSection(report);
         AppendConnectionStringSection(report);
+        AppendDelegatedTokenSection(report, req);
 
         try
         {
@@ -157,6 +161,9 @@ public class SqlDebug
         var database = await _dbContext.Database
             .SqlQueryRaw<string>("SELECT DB_NAME()")
             .FirstOrDefaultAsync();
+        var sqlIdentity = await _dbContext.Database
+            .SqlQueryRaw<string>("SELECT SUSER_SNAME()")
+            .FirstOrDefaultAsync();
 
         var menuGroupCount = await _dbContext.MenuGroups.CountAsync();
         var menuItemCount = await _dbContext.MenuItems.CountAsync();
@@ -167,7 +174,55 @@ public class SqlDebug
         report.AppendLine($"MenuGroups: {menuGroupCount}");
         report.AppendLine($"MenuItems: {menuItemCount}");
         report.AppendLine($"PowerBIConfigs: {powerBiCount}");
+        report.AppendLine($"SQL Identity: {sqlIdentity ?? "unknown"}");
         report.AppendLine();
+    }
+
+    private void AppendDelegatedTokenSection(StringBuilder report, HttpRequest req)
+    {
+        report.AppendLine("DELEGATED TOKEN CONTEXT");
+        report.AppendLine("----------------------------------------");
+
+        if (req.Headers.TryGetValue("X-SQL-Token", out var headerValue))
+        {
+            var headerToken = headerValue.ToString();
+            if (!string.IsNullOrWhiteSpace(headerToken))
+            {
+                report.AppendLine("X-SQL-Token header: ✅ Present");
+                report.AppendLine($"Length: {headerToken.Length}");
+                report.AppendLine($"Preview: {CreatePreview(headerToken)}");
+            }
+            else
+            {
+                report.AppendLine("X-SQL-Token header: ⚠️ Present but empty");
+            }
+        }
+        else
+        {
+            report.AppendLine("X-SQL-Token header: ❌ Missing");
+        }
+
+        var contextToken = SqlTokenContext.CurrentToken;
+        if (!string.IsNullOrWhiteSpace(contextToken))
+        {
+            report.AppendLine("AsyncLocal context token: ✅ Present");
+            report.AppendLine($"Length: {contextToken.Length}");
+            report.AppendLine($"Preview: {CreatePreview(contextToken)}");
+        }
+        else
+        {
+            report.AppendLine("AsyncLocal context token: ❌ Missing");
+        }
+
+        report.AppendLine();
+    }
+
+    private static string CreatePreview(string token)
+    {
+        const int previewLength = 12;
+        return token.Length <= previewLength
+            ? token
+            : $"{token[..previewLength]}…";
     }
 
     private async Task AppendManagedIdentityProbe(StringBuilder report)
