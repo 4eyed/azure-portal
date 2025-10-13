@@ -1,5 +1,7 @@
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using MenuApi.Infrastructure;
 using MenuApi.Services;
 
 namespace MenuApi.Extensions;
@@ -9,6 +11,8 @@ namespace MenuApi.Extensions;
 /// </summary>
 public static class HttpRequestExtensions
 {
+    private const string SqlTokenHeaderName = "X-SQL-Token";
+
     /// <summary>
     /// Gets the authenticated user ID from the request, with fallback to query param for local dev
     /// </summary>
@@ -51,4 +55,49 @@ public static class HttpRequestExtensions
                (isAdminQuery.Equals("true", StringComparison.OrdinalIgnoreCase) || isAdminQuery == "1");
     }
 
+    /// <summary>
+    /// Extracts the delegated SQL access token from the request and stores it in an AsyncLocal scope.
+    /// Dispose the returned scope when the request handling is finished to clear the token.
+    /// </summary>
+    public static IDisposable BeginSqlTokenScope(this HttpRequest req, ILogger logger)
+    {
+        string? token = null;
+
+        if (req.Headers.TryGetValue(SqlTokenHeaderName, out var headerValue))
+        {
+            token = headerValue.ToString();
+
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                logger.LogInformation(
+                    "Received delegated SQL token from header {Header} (length: {Length}, preview: {Preview})",
+                    SqlTokenHeaderName,
+                    token.Length,
+                    GetPreview(token));
+            }
+            else
+            {
+                logger.LogWarning(
+                    "Header {Header} was present but empty; falling back to configured authentication.",
+                    SqlTokenHeaderName);
+                token = null;
+            }
+        }
+        else
+        {
+            logger.LogWarning(
+                "Header {Header} not found; database calls will use managed identity or connection string credentials.",
+                SqlTokenHeaderName);
+        }
+
+        return SqlTokenContext.BeginScope(token);
+    }
+
+    private static string GetPreview(string token)
+    {
+        const int previewLength = 12;
+        return token.Length <= previewLength
+            ? token
+            : $"{token[..previewLength]}…";
+    }
 }

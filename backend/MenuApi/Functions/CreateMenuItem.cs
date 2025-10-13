@@ -37,6 +37,8 @@ public class CreateMenuItem
     {
         try
         {
+            using var sqlTokenScope = req.BeginSqlTokenScope(_logger);
+
             // Extract authenticated user ID
             var userId = req.GetAuthenticatedUserId(_claimsParser);
             if (string.IsNullOrEmpty(userId))

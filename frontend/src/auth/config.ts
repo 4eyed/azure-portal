@@ -68,3 +68,8 @@ export const powerBIRequest = {
     'https://analysis.windows.net/powerbi/api/Workspace.ReadWrite.All',
   ],
 };
+
+// SQL Database delegated access token scopes
+export const sqlRequest = {
+  scopes: ['https://database.windows.net//.default'],
+};

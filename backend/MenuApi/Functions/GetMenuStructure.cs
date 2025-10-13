@@ -30,8 +30,15 @@ public class GetMenuStructure
     {
         try
         {
+            using var sqlTokenScope = req.BeginSqlTokenScope(_logger);
+
             // Extract user ID from X-MS-CLIENT-PRINCIPAL header (injected by Azure Static Web Apps)
             var userId = _claimsParser.GetUserId(req);
+
+            _logger.LogDebug(
+                "Auth header snapshot - X-MS-CLIENT-PRINCIPAL present: {HasSwaPrincipal}, Authorization present: {HasAuthorization}",
+                req.Headers.ContainsKey("X-MS-CLIENT-PRINCIPAL"),
+                req.Headers.ContainsKey("Authorization"));
 
             // Fallback to query parameter for local development
             if (string.IsNullOrEmpty(userId))

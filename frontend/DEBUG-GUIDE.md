@@ -135,7 +135,27 @@ The console will show exactly which variables are missing and where to configure
    - Production: Calls should go to `/api/*` (same origin)
 5. Verify backend is running (local) or linked (production)
 
-### Scenario 4: Wrong Environment Being Used
+### Scenario 4: 401 errors in production with Managed Identity failures
+
+**Symptoms**:
+- Browser console shows `GET .../api/auth/check-admin 401 (Unauthorized)`
+- `GET .../api/menu-structure 401 (Unauthorized)` immediately follows
+- Error panel expands with `ManagedIdentityCredential authentication failed ... No User Assigned or Delegated Managed Identity found`
+
+**What it means**:
+- Static Web Apps injects the `X-MS-CLIENT-PRINCIPAL` header when a user is authenticated. The menu loader depends on that header (or a `?user=` query param during local dev) before it calls the API.【F:frontend/src/contexts/MenuContext.tsx†L37-L63】【F:backend/MenuApi/Functions/GetMenuStructure.cs†L31-L50】
+- The backend tries to open the SQL connection using Azure `DefaultAzureCredential`. Without a managed identity assigned to the Function App (or a SQL username/password fallback), the credential request fails and bubbles up as the `ManagedIdentityCredential` error.【F:backend/MenuApi/Configuration/ServiceCollectionExtensions.cs†L32-L69】
+
+**How to fix it**:
+1. **Ensure the user is authenticated in Static Web Apps**
+   - Confirm the Entra ID (or other provider) connection is configured.
+   - Use the Static Web Apps auth flow (`/.auth/login/aad`) and reload. Once signed in, the `X-MS-CLIENT-PRINCIPAL` header will be present and the first 401 will disappear.
+2. **Provide the backend a working SQL credential**
+   - Recommended: Assign the Function App a **User Assigned Managed Identity** and grant it `db_datareader`, `db_datawriter`, and `db_ddladmin` on the SQL database.
+   - Temporary fallback: Change `DOTNET_CONNECTION_STRING` to use SQL authentication (`User ID=...;Password=...`) until the managed identity is ready.
+3. Redeploy/restart the Function App after updating authentication or identity assignments, then hard refresh the frontend. Both API calls should return HTTP 200 once the identity header and SQL authentication are satisfied.
+
+### Scenario 5: Wrong Environment Being Used
 
 **Symptoms**:
 - App is using production URLs in development (or vice versa)
@@ -152,7 +172,7 @@ The console will show exactly which variables are missing and where to configure
    - Local: Run `npm run dev` (not `npm run build`)
    - Production: Verify build command in GitHub workflow
 
-### Scenario 5: Environment Variables Not Updating
+### Scenario 6: Environment Variables Not Updating
 
 **Symptoms**:
 - Changed `.env` file but app still shows old values

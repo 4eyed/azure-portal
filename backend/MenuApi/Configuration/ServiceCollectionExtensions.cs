@@ -10,6 +10,7 @@ using OpenFga.Sdk.Client;
 using OpenFga.Sdk.Configuration;
 using Azure.Core;
 using Azure.Identity;
+using MenuApi.Infrastructure;
 
 namespace MenuApi.Configuration;
 
@@ -31,6 +32,9 @@ public static class ServiceCollectionExtensions
                 configuration.GetConnectionString("DefaultConnection") ??
                 string.Empty);
 
+        // Expose DefaultAzureCredential so managed identity can be reused (Power BI, etc.)
+        services.AddSingleton<TokenCredential>(_ => new DefaultAzureCredential());
+
         services.AddOptions<OpenFgaOptions>()
             .Configure(options =>
             {
@@ -38,9 +42,13 @@ public static class ServiceCollectionExtensions
                 options.StoreId = configuration["OPENFGA_STORE_ID"] ?? string.Empty;
             });
 
+        services.AddScoped<SqlTokenInterceptor>();
+
         services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
         {
             var logger = serviceProvider.GetRequiredService<ILogger<ApplicationDbContext>>();
+            var interceptor = serviceProvider.GetRequiredService<SqlTokenInterceptor>();
+            var credential = serviceProvider.GetRequiredService<TokenCredential>();
 
             var connectionString = configuration["DOTNET_CONNECTION_STRING"]
                 ?? configuration.GetConnectionString("DefaultConnection");
@@ -57,11 +65,29 @@ public static class ServiceCollectionExtensions
 
             logger.LogInformation("Configuring SQL Server DbContext with managed identity connection string: {ConnectionString}", sanitized);
 
-            options.UseSqlServer(connectionString);
-        }, ServiceLifetime.Scoped);
+            options.UseSqlServer(connectionString, sqlOptions =>
+            {
+                sqlOptions.AccessTokenFactory(async cancellationToken =>
+                {
+                    var delegatedToken = SqlTokenContext.CurrentToken;
+                    if (!string.IsNullOrWhiteSpace(delegatedToken))
+                    {
+                        logger.LogDebug(
+                            "Providing delegated SQL access token via AccessTokenFactory (length: {Length}, preview: {Preview})",
+                            delegatedToken.Length,
+                            delegatedToken.Length <= 12 ? delegatedToken : $"{delegatedToken[..12]}…");
+                        return delegatedToken;
+                    }
 
-        // Expose DefaultAzureCredential so managed identity can be reused (Power BI, etc.)
-        services.AddSingleton<TokenCredential>(_ => new DefaultAzureCredential());
+                    logger.LogDebug("Delegated SQL token not available; acquiring managed identity token via DefaultAzureCredential.");
+                    var accessToken = await credential.GetTokenAsync(
+                        new TokenRequestContext(new[] { "https://database.windows.net//.default" }),
+                        cancellationToken);
+                    return accessToken.Token;
+                });
+            });
+            options.AddInterceptors(interceptor);
+        }, ServiceLifetime.Scoped);
 
         // Register OpenFGA client
         services.AddSingleton<OpenFgaClient>(sp =>
