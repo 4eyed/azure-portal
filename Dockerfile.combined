@@ -50,6 +50,10 @@ COPY openfga-config /openfga-config
 COPY backend/MenuApi/start.sh /start.sh
 RUN chmod +x /start.sh
 
+# Copy debugging scripts
+COPY backend/MenuApi/scripts /usr/local/bin/debug-scripts
+RUN chmod +x /usr/local/bin/debug-scripts/*.sh
+
 # Environment variables
 ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
     AzureFunctionsJobHost__Logging__Console__IsEnabled=true \

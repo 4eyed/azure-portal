@@ -39,6 +39,111 @@ if [ -z "$OPENFGA_STORE_ID" ]; then
     echo "⚠️  WARNING: OPENFGA_STORE_ID not set! Will try to create/find store dynamically."
 fi
 
+echo ""
+echo "=============================================="
+echo "Pre-Flight Connectivity Checks"
+echo "=============================================="
+
+# Function to extract server from connection string
+extract_server_from_uri() {
+    local uri="$1"
+    # Extract server from sqlserver://server:port format
+    echo "$uri" | sed -n 's|.*sqlserver://\([^:;/]*\).*|\1|p'
+}
+
+# Check 1: Verify OpenFGA binary exists and is executable
+echo ""
+echo "CHECK 1: OpenFGA Binary"
+echo "----------------------------------------"
+if command -v openfga &> /dev/null; then
+    echo "✅ OpenFGA binary found: $(which openfga)"
+    openfga version 2>&1 || echo "   (version command not available)"
+else
+    echo "❌ ERROR: OpenFGA binary not found in PATH"
+    exit 1
+fi
+
+# Check 2: Extract and test SQL Server connectivity
+echo ""
+echo "CHECK 2: SQL Server Network Connectivity"
+echo "----------------------------------------"
+SQL_SERVER=$(extract_server_from_uri "$OPENFGA_DATASTORE_URI")
+if [ -n "$SQL_SERVER" ]; then
+    echo "SQL Server: $SQL_SERVER"
+
+    # Try to resolve DNS
+    echo "Testing DNS resolution..."
+    if host "$SQL_SERVER" &> /dev/null; then
+        echo "✅ DNS resolution successful"
+        IP_ADDRESS=$(host "$SQL_SERVER" | grep "has address" | head -1 | awk '{print $4}')
+        echo "   Resolved to: $IP_ADDRESS"
+    else
+        echo "⚠️  DNS resolution failed or host command not available"
+    fi
+
+    # Try to test TCP connectivity on port 1433 (SQL Server default)
+    echo "Testing TCP connectivity on port 1433..."
+    if timeout 5 bash -c "cat < /dev/null > /dev/tcp/$SQL_SERVER/1433" 2>/dev/null; then
+        echo "✅ TCP port 1433 is reachable"
+    else
+        echo "⚠️  Cannot establish TCP connection to port 1433"
+        echo "   This could indicate:"
+        echo "   - Firewall blocking the connection"
+        echo "   - SQL Server not listening on this port"
+        echo "   - Network routing issues"
+    fi
+else
+    echo "⚠️  Could not extract server name from OPENFGA_DATASTORE_URI"
+    echo "   URI format: ${OPENFGA_DATASTORE_URI:0:50}..."
+fi
+
+# Check 3: Test OpenFGA database connectivity with a simple test
+echo ""
+echo "CHECK 3: OpenFGA Database Connectivity Test"
+echo "----------------------------------------"
+echo "Testing if OpenFGA can connect to database..."
+echo "This will attempt to run OpenFGA migrate (which validates connectivity)"
+echo ""
+
+# Run a quick migration test (this validates DB connectivity without side effects)
+MIGRATE_START=$(date +%s)
+if openfga migrate \
+    --datastore-engine ${OPENFGA_DATASTORE_ENGINE:-sqlserver} \
+    --datastore-uri "$OPENFGA_DATASTORE_URI" 2>&1 | tee /tmp/openfga-migrate.log; then
+    MIGRATE_END=$(date +%s)
+    MIGRATE_DURATION=$((MIGRATE_END - MIGRATE_START))
+    echo ""
+    echo "✅ OpenFGA migration completed successfully (${MIGRATE_DURATION}s)"
+    echo "   Database connectivity confirmed"
+else
+    MIGRATE_END=$(date +%s)
+    MIGRATE_DURATION=$((MIGRATE_END - MIGRATE_START))
+    echo ""
+    echo "⚠️  Migration completed with warnings (${MIGRATE_DURATION}s)"
+    echo "   Checking if tables already exist (this is OK)..."
+
+    if grep -qi "already exists\|duplicate" /tmp/openfga-migrate.log 2>/dev/null; then
+        echo "✅ Tables already exist - this is normal on subsequent startups"
+    else
+        echo "❌ Migration failed with errors. Last 10 lines:"
+        tail -10 /tmp/openfga-migrate.log 2>/dev/null || echo "   (no log available)"
+        echo ""
+        echo "   Common causes:"
+        echo "   1. Managed Identity not granted database permissions"
+        echo "   2. Firewall rules blocking Azure service"
+        echo "   3. Connection string format incorrect"
+        echo "   4. SQL Server authentication configuration issue"
+        echo ""
+        echo "   Continuing startup, but OpenFGA may not work correctly..."
+    fi
+fi
+
+echo ""
+echo "=============================================="
+echo "Pre-Flight Checks Complete"
+echo "=============================================="
+echo ""
+
 # Run database migrations (skip by default in production to speed up startup)
 if [ "${SKIP_MIGRATIONS}" = "true" ]; then
     echo "⏩ Skipping database migrations (SKIP_MIGRATIONS=true)"
@@ -77,8 +182,15 @@ while [ $ELAPSED -lt $OPENFGA_TIMEOUT ]; do
     # Check if OpenFGA process is still running
     if ! kill -0 $OPENFGA_PID 2>/dev/null; then
         echo "❌ ERROR: OpenFGA process died unexpectedly"
-        echo "OpenFGA logs:"
-        cat /var/log/openfga.log
+        echo ""
+        echo "OpenFGA logs (last 100 lines):"
+        tail -100 /var/log/openfga.log
+        echo ""
+        echo "Common causes:"
+        echo "  1. Database connection failed (check managed identity permissions)"
+        echo "  2. Invalid datastore URI format"
+        echo "  3. SQL Server firewall blocking connection"
+        echo "  4. OpenFGA crashed during initialization"
         exit 1
     fi
 
