@@ -71,6 +71,12 @@ export function MenuProvider({ children }: { children: ReactNode }) {
       // Static Web Apps automatically forwards identity headers; apiGet preserves SWA cookies
       const response = await apiGet(endpoint);
 
+      // Don't retry on authentication errors - they won't resolve automatically
+      if (response.status === 401) {
+        console.error('❌ Authentication failed (401). Backend is not receiving user authentication.');
+        throw new Error('Authentication failed - please check backend configuration');
+      }
+
       if (!response.ok) {
         throw new Error(`Failed to load menu: ${response.statusText}`);
       }
@@ -82,6 +88,7 @@ export function MenuProvider({ children }: { children: ReactNode }) {
       const message = err instanceof Error ? err.message : 'Failed to load menu';
       setError(message);
       console.error('Error loading menu structure:', err);
+      // Don't allow infinite retries - error state will prevent useEffect from retrying
     } finally {
       setLoading(false);
       fetchInProgressRef.current = false;
