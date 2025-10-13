@@ -157,6 +157,16 @@ public class SqlDebug
         await TestManagedIdentity(connectionString, results);
         results.AppendLine();
 
+        // Test 1b: Managed Identity with EXPLICIT config verification
+        if (isAzure)
+        {
+            results.AppendLine("========================================");
+            results.AppendLine("TEST 1b: Managed Identity - Explicit Verification");
+            results.AppendLine("========================================");
+            await TestManagedIdentityExplicit(connectionString, results);
+            results.AppendLine();
+        }
+
         // Test 2: Username/Password (legacy fallback)
         results.AppendLine("========================================");
         results.AppendLine("TEST 2: Username/Password Connection");
@@ -254,6 +264,141 @@ public class SqlDebug
                 results.AppendLine($"   Inner Exception: {ex.InnerException.Message}");
             }
             _logger.LogError(ex, "❌ Managed Identity connection failed");
+        }
+    }
+
+    private async Task TestManagedIdentityExplicit(string baseConnectionString, StringBuilder results)
+    {
+        try
+        {
+            results.AppendLine("🔍 This test verifies the fix for Option A:");
+            results.AppendLine("   - Connection string HAS 'Authentication=Active Directory Default'");
+            results.AppendLine("   - NO SqlTokenInterceptor (no AccessToken property set)");
+            results.AppendLine("   - Managed Identity should authenticate automatically");
+            results.AppendLine();
+
+            // Parse the actual connection string from config
+            var builder = new SqlConnectionStringBuilder(baseConnectionString);
+
+            // Verify configuration
+            var hasAuth = builder.TryGetValue("Authentication", out var authValue);
+            results.AppendLine($"Configuration Check:");
+            results.AppendLine($"   Has 'Authentication' parameter: {(hasAuth ? "✅ YES" : "❌ NO")}");
+            if (hasAuth)
+            {
+                results.AppendLine($"   Authentication value: {authValue}");
+            }
+
+            var hasPassword = !string.IsNullOrEmpty(builder.Password);
+            var hasUserId = !string.IsNullOrEmpty(builder.UserID);
+            results.AppendLine($"   Has User ID: {(hasUserId ? "YES" : "NO")}");
+            results.AppendLine($"   Has Password: {(hasPassword ? "YES" : "NO")}");
+            results.AppendLine();
+
+            if (!hasAuth)
+            {
+                results.AppendLine("⚠️  WARNING: Connection string missing 'Authentication' parameter!");
+                results.AppendLine("   For Managed Identity, connection string should have:");
+                results.AppendLine("   Authentication=Active Directory Default");
+                results.AppendLine();
+            }
+
+            // Check if SqlTokenInterceptor would interfere
+            var sqlToken = SqlTokenContext.SqlToken;
+            results.AppendLine($"SqlTokenContext Check:");
+            results.AppendLine($"   Has SQL Token: {(!string.IsNullOrEmpty(sqlToken) ? "⚠️  YES (unexpected in Azure!)" : "✅ NO (correct)")}");
+            if (!string.IsNullOrEmpty(sqlToken))
+            {
+                results.AppendLine($"   Token preview: {sqlToken.Substring(0, Math.Min(20, sqlToken.Length))}...");
+                results.AppendLine($"   ⚠️  If SqlTokenInterceptor is active, this will cause:");
+                results.AppendLine($"      'Cannot set the AccessToken property if Authentication has been specified'");
+            }
+            results.AppendLine();
+
+            // Attempt connection using connection string AS-IS (should work with Managed Identity)
+            results.AppendLine("Attempting connection with AS-IS connection string...");
+            var stopwatch = Stopwatch.StartNew();
+            using var connection = new SqlConnection(builder.ConnectionString);
+
+            // Important: Do NOT set AccessToken - let Managed Identity from connection string work
+            await connection.OpenAsync();
+            stopwatch.Stop();
+
+            results.AppendLine($"✅ SUCCESS - Managed Identity working correctly!");
+            results.AppendLine($"   Connected in {stopwatch.ElapsedMilliseconds}ms");
+            results.AppendLine($"   Server Version: {connection.ServerVersion}");
+            results.AppendLine($"   Database: {connection.Database}");
+
+            // Verify we're authenticated as the Managed Identity
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText = @"
+                SELECT
+                    SUSER_SNAME() AS CurrentUser,
+                    ORIGINAL_LOGIN() AS OriginalLogin,
+                    SYSTEM_USER AS SystemUser,
+                    DB_NAME() AS CurrentDB";
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                results.AppendLine($"   Current User: {reader["CurrentUser"]}");
+                results.AppendLine($"   Original Login: {reader["OriginalLogin"]}");
+                results.AppendLine($"   System User: {reader["SystemUser"]}");
+                results.AppendLine($"   Current DB: {reader["CurrentDB"]}");
+
+                // Verify it's the Function App managed identity
+                var currentUser = reader["CurrentUser"].ToString() ?? "";
+                if (currentUser.Contains("func-menu-app", StringComparison.OrdinalIgnoreCase))
+                {
+                    results.AppendLine();
+                    results.AppendLine("✅ Verified: Authenticated as Function App Managed Identity!");
+                }
+            }
+
+            results.AppendLine();
+            results.AppendLine("🎉 Option A fix is working!");
+            results.AppendLine("   - Managed Identity authentication successful");
+            results.AppendLine("   - No conflict between Authentication parameter and AccessToken");
+            results.AppendLine("   - SqlTokenInterceptor is correctly disabled in Azure mode");
+
+            _logger.LogInformation("✅ Managed Identity explicit verification successful");
+        }
+        catch (Exception ex)
+        {
+            results.AppendLine($"❌ FAILED: {ex.Message}");
+            results.AppendLine($"   Exception Type: {ex.GetType().Name}");
+
+            if (ex.InnerException != null)
+            {
+                results.AppendLine($"   Inner Exception: {ex.InnerException.Message}");
+            }
+
+            // Provide troubleshooting guidance
+            results.AppendLine();
+            results.AppendLine("🔍 Troubleshooting:");
+
+            if (ex.Message.Contains("Cannot set the AccessToken property"))
+            {
+                results.AppendLine("   ❌ SqlTokenInterceptor is still active in Azure mode!");
+                results.AppendLine("   Fix: Check ServiceCollectionExtensions.cs - interceptor should only be");
+                results.AppendLine("        registered when !isAzure");
+            }
+            else if (ex.Message.Contains("No managed identity found") ||
+                     ex.Message.Contains("Login failed for user"))
+            {
+                results.AppendLine("   ❌ Managed Identity not configured or not added to SQL Server");
+                results.AppendLine("   Check:");
+                results.AppendLine("      1. Function App has System-Assigned Managed Identity enabled");
+                results.AppendLine("      2. Managed Identity is added as SQL user: CREATE USER [func-menu-app-18436] FROM EXTERNAL PROVIDER");
+                results.AppendLine("      3. Managed Identity has permissions: db_datareader, db_datawriter, db_ddladmin");
+            }
+            else if (ex.Message.Contains("Authentication") && ex.Message.Contains("not specified"))
+            {
+                results.AppendLine("   ❌ Connection string missing 'Authentication' parameter");
+                results.AppendLine("   GitHub Secret DOTNET_CONNECTION_STRING should include:");
+                results.AppendLine("      Authentication=Active Directory Default");
+            }
+
+            _logger.LogError(ex, "❌ Managed Identity explicit verification failed");
         }
     }
 

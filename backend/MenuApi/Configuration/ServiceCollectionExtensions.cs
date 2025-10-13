@@ -140,12 +140,21 @@ public static class ServiceCollectionExtensions
 
             logger.LogInformation("🔍 ========================================");
 
-            // Add SQL token interceptor to set AccessToken from AsyncLocal context (local dev)
-            // In production, this will just pass through and use Managed Identity from connection string
-            var interceptor = new SqlTokenInterceptor(logger);
+            // Configure EF Core with SQL Server
+            options.UseSqlServer(connectionString);
 
-            options.UseSqlServer(connectionString)
-                .AddInterceptors(interceptor);
+            // Only add SQL token interceptor in LOCAL DEV mode
+            // In Azure, Managed Identity is used via connection string (no interceptor needed)
+            if (!isAzure)
+            {
+                logger.LogInformation("🔍 Registering SqlTokenInterceptor for local dev (user SQL tokens)");
+                var interceptor = new SqlTokenInterceptor(logger);
+                options.AddInterceptors(interceptor);
+            }
+            else
+            {
+                logger.LogInformation("🔍 Using Managed Identity authentication (no interceptor needed)");
+            }
         }, ServiceLifetime.Scoped); // Must be Scoped (not Singleton) for per-request SQL tokens
 
         // Register OpenFGA client
