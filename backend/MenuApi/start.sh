@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+# Updated: 2025-10-13 - Trigger deployment with corrected SQL Server hostname
+
 echo "=============================================="
 echo "Container Startup - $(date)"
 echo "=============================================="
