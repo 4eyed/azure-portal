@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Updated: 2025-10-13 - Trigger deployment with corrected SQL Server hostname
+# Updated: 2025-10-13 - Trigger deployment with ActiveDirectoryMSI authentication
 
 echo "=============================================="
 echo "Container Startup - $(date)"
