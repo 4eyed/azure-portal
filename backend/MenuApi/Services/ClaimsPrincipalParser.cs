@@ -1,7 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace MenuApi.Services;
 
@@ -30,28 +35,35 @@ public class ClaimsPrincipalParser : IClaimsPrincipalParser
 {
     private const string ClientPrincipalHeader = "X-MS-CLIENT-PRINCIPAL";
 
+    private const string AuthorizationHeader = "Authorization";
+    private readonly ILogger<ClaimsPrincipalParser> _logger;
+
+    public ClaimsPrincipalParser(ILogger<ClaimsPrincipalParser> logger)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
     public string? GetUserId(HttpRequest request)
     {
-        // Priority 1: Check JWT claims (local dev with Authorization Bearer token)
-        if (request.HttpContext?.User?.Identity?.IsAuthenticated == true)
-        {
-            var oidClaim = request.HttpContext.User.FindFirst("oid")
-                ?? request.HttpContext.User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")
-                ?? request.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+        var principal = EnsurePrincipal(request);
 
-            if (oidClaim != null && !string.IsNullOrEmpty(oidClaim.Value))
-            {
-                return oidClaim.Value;
-            }
+        // Priority 1: Check JWT claims (local dev with Authorization Bearer token)
+        var oidClaim = principal?.FindFirst("oid")
+            ?? principal?.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")
+            ?? principal?.FindFirst(ClaimTypes.NameIdentifier);
+
+        if (oidClaim != null && !string.IsNullOrEmpty(oidClaim.Value))
+        {
+            return oidClaim.Value;
         }
 
         // Priority 2: Check X-MS-CLIENT-PRINCIPAL header (Azure SWA production)
-        var principal = ParseClientPrincipal(request);
+        var clientPrincipal = ParseClientPrincipal(request);
 
         // Use Entra Object ID (OID) from claims for stable user identity
-        if (principal?.Claims != null)
+        if (clientPrincipal?.Claims != null)
         {
-            var oidClaim = principal.Claims.FirstOrDefault(c =>
+            var oidClaim = clientPrincipal.Claims.FirstOrDefault(c =>
                 c.Typ?.Equals("oid", StringComparison.OrdinalIgnoreCase) == true ||
                 c.Typ?.Equals("http://schemas.microsoft.com/identity/claims/objectidentifier", StringComparison.OrdinalIgnoreCase) == true);
 
@@ -62,21 +74,23 @@ public class ClaimsPrincipalParser : IClaimsPrincipalParser
         }
 
         // Priority 3: Fallback to UserId field (email or username)
-        if (!string.IsNullOrEmpty(principal?.UserId))
+        if (!string.IsNullOrEmpty(clientPrincipal?.UserId))
         {
-            return principal.UserId;
+            return clientPrincipal.UserId;
         }
 
         // Priority 4: Fallback to UserDetails
-        return principal?.UserDetails;
+        return clientPrincipal?.UserDetails;
     }
 
     public string[] GetUserRoles(HttpRequest request)
     {
+        var principal = EnsurePrincipal(request);
+
         // Priority 1: Check JWT claims (local dev with Authorization Bearer token)
-        if (request.HttpContext?.User?.Identity?.IsAuthenticated == true)
+        if (principal?.Identity?.IsAuthenticated == true)
         {
-            var roles = request.HttpContext.User.Claims
+            var roles = principal.Claims
                 .Where(c => c.Type == "roles" || c.Type == ClaimTypes.Role)
                 .Select(c => c.Value)
                 .ToArray();
@@ -88,24 +102,96 @@ public class ClaimsPrincipalParser : IClaimsPrincipalParser
         }
 
         // Priority 2: Check X-MS-CLIENT-PRINCIPAL header (Azure SWA production)
-        var principal = ParseClientPrincipal(request);
-        return principal?.UserRoles ?? Array.Empty<string>();
+        var swaPrincipal = ParseClientPrincipal(request);
+        return swaPrincipal?.UserRoles ?? Array.Empty<string>();
     }
 
     public bool HasRole(HttpRequest request, string role)
     {
+        var principal = EnsurePrincipal(request);
+
         // Priority 1: Check JWT claims using standard ASP.NET Core method
-        if (request.HttpContext?.User?.Identity?.IsAuthenticated == true)
+        if (principal?.Identity?.IsAuthenticated == true && principal.IsInRole(role))
         {
-            if (request.HttpContext.User.IsInRole(role))
-            {
-                return true;
-            }
+            return true;
         }
 
         // Priority 2: Check X-MS-CLIENT-PRINCIPAL header
         var roles = GetUserRoles(request);
         return roles.Contains(role, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private ClaimsPrincipal? EnsurePrincipal(HttpRequest request)
+    {
+        var principal = request.HttpContext?.User;
+        if (principal?.Identity?.IsAuthenticated == true)
+        {
+            return principal;
+        }
+
+        var bearerPrincipal = ParseBearerPrincipal(request);
+        if (bearerPrincipal != null)
+        {
+            if (request.HttpContext is not null)
+            {
+                request.HttpContext.User = bearerPrincipal;
+            }
+
+            return bearerPrincipal;
+        }
+
+        return principal;
+    }
+
+    private ClaimsPrincipal? ParseBearerPrincipal(HttpRequest request)
+    {
+        if (!request.Headers.TryGetValue(AuthorizationHeader, out var headerValues))
+        {
+            return null;
+        }
+
+        var header = headerValues.ToString();
+        if (string.IsNullOrWhiteSpace(header) || !header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        var token = header[7..].Trim();
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return null;
+        }
+
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(token);
+            var baseClaims = jwt.Claims.ToList();
+            var identity = new ClaimsIdentity(baseClaims, "Bearer", ClaimTypes.NameIdentifier, ClaimTypes.Role);
+
+            foreach (var roleClaim in baseClaims.Where(c => string.Equals(c.Type, "roles", StringComparison.OrdinalIgnoreCase)))
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Role, roleClaim.Value));
+            }
+            var principal = new ClaimsPrincipal(identity);
+
+            _logger.LogDebug(
+                "Constructed claims principal from Authorization header with audience {Audience} and subject {Subject}.", 
+                jwt.Audiences.FirstOrDefault() ?? "<unknown>",
+                jwt.Subject ?? "<unknown>");
+
+            if (jwt.ValidTo != DateTime.MinValue)
+            {
+                _logger.LogDebug("Bearer token expires at {Expiry:u} (UTC).", jwt.ValidTo);
+            }
+
+            return principal;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to parse Authorization bearer token. Falling back to Static Web Apps headers.");
+            return null;
+        }
     }
 
     private ClientPrincipal? ParseClientPrincipal(HttpRequest request)

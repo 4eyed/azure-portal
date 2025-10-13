@@ -32,8 +32,15 @@ public class CheckAdmin
     {
         try
         {
+            using var sqlTokenScope = req.BeginSqlTokenScope(_logger);
+
             // Extract authenticated user ID (Entra OID)
             var userId = req.GetAuthenticatedUserId(_claimsParser);
+
+            _logger.LogDebug(
+                "Auth header snapshot - X-MS-CLIENT-PRINCIPAL present: {HasSwaPrincipal}, Authorization present: {HasAuthorization}",
+                req.Headers.ContainsKey("X-MS-CLIENT-PRINCIPAL"),
+                req.Headers.ContainsKey("Authorization"));
 
             _logger.LogInformation("Extracted userId: {UserId}", userId ?? "NULL");
 

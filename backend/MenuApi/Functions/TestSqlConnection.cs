@@ -31,6 +31,8 @@ public class TestSqlConnection
     {
         try
         {
+            using var sqlTokenScope = req.BeginSqlTokenScope(_logger);
+
             _logger.LogInformation("Testing SQL Server connectivity...");
 
             // Test 1: Get database name
