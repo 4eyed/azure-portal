@@ -44,8 +44,14 @@ public class SqlTokenInterceptor : DbConnectionInterceptor
             {
                 // In production (Azure), Managed Identity from connection string will be used
                 // In local dev, this would be an error if no SQL token is provided
-                _logger.LogDebug(
-                    "No SQL token in SqlTokenContext - using connection string authentication (Managed Identity in Azure, or error in local dev)"
+                var isAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
+
+                _logger.LogInformation(
+                    "⚠️ No SQL token in SqlTokenContext - using connection string authentication " +
+                    "(IsAzure: {IsAzure}, ConnectionState: {ConnectionState}, Method: {ExpectedMethod})",
+                    isAzure,
+                    sqlConnection.State,
+                    isAzure ? "Managed Identity" : "Should have User Token"
                 );
             }
         }

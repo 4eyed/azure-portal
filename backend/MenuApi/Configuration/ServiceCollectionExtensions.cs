@@ -55,9 +55,20 @@ public static class ServiceCollectionExtensions
                     connectionString = RemoveAuthenticationParameter(connectionString);
                 }
 
+                // Log connection string configuration (safe - no password exposed)
+                var logger = serviceProvider.GetRequiredService<ILogger<SqlTokenInterceptor>>();
+                var safeConnectionString = string.Join(";", connectionString.Split(';')
+                    .Where(s => !s.Contains("Password", StringComparison.OrdinalIgnoreCase) &&
+                               !s.Contains("Pwd", StringComparison.OrdinalIgnoreCase)));
+
+                logger.LogInformation(
+                    "📊 Database Configuration - IsAzure: {IsAzure}, ConnectionString: {ConnectionString}",
+                    isAzure,
+                    safeConnectionString
+                );
+
                 // Add SQL token interceptor to set AccessToken from AsyncLocal context (local dev)
                 // In production, this will just pass through and use Managed Identity from connection string
-                var logger = serviceProvider.GetRequiredService<ILogger<SqlTokenInterceptor>>();
                 var interceptor = new SqlTokenInterceptor(logger);
 
                 options.UseSqlServer(connectionString)
