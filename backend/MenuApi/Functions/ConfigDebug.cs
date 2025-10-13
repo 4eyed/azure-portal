@@ -5,7 +5,6 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MenuApi.Infrastructure;
-using MenuApi.Extensions;
 using System.Text;
 
 namespace MenuApi.Functions;
@@ -29,9 +28,6 @@ public class ConfigDebug
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "debug/config")] HttpRequest req)
     {
         _logger.LogInformation("Configuration debug requested");
-
-        // Extract SQL token from request header (for local dev)
-        req.ExtractAndStoreSqlToken(_logger);
 
         var results = new StringBuilder();
         results.AppendLine("========================================");
@@ -125,18 +121,13 @@ public class ConfigDebug
         results.AppendLine($"Memory (MB): {Environment.WorkingSet / 1024 / 1024}");
         results.AppendLine();
 
-        // SQL Token Context
-        results.AppendLine("SQL TOKEN CONTEXT");
+        // Managed Identity Context
+        results.AppendLine("MANAGED IDENTITY CONTEXT");
         results.AppendLine("----------------------------------------");
-        var sqlToken = SqlTokenContext.SqlToken;
-        if (!string.IsNullOrEmpty(sqlToken))
-        {
-            results.AppendLine($"SQL Token: {sqlToken.Substring(0, Math.Min(20, sqlToken.Length))}... ({sqlToken.Length} chars)");
-        }
-        else
-        {
-            results.AppendLine("SQL Token: [not set]");
-        }
+        AppendEnvVar(results, "IDENTITY_ENDPOINT");
+        AppendEnvVar(results, "IDENTITY_HEADER", sanitize: true);
+        AppendEnvVar(results, "MSI_ENDPOINT");
+        AppendEnvVar(results, "MSI_SECRET", sanitize: true);
         results.AppendLine();
 
         // OpenFGA Process Check

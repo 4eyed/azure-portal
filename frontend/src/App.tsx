@@ -10,6 +10,8 @@ import { Header } from './components/Layout/Header';
 import { Dashboard } from './pages/Dashboard';
 import { PowerBIReport } from './pages/PowerBIReport';
 import { EnvDebugger } from './components/Debug/EnvDebugger';
+import { DevAuthBanner } from './components/Debug/DevAuthBanner';
+import { useDevAuthUpdater } from './auth/useDevAuthUpdater';
 import './App.css';
 
 const msalInstance = new PublicClientApplication(msalConfig);
@@ -23,6 +25,7 @@ msalInstance.initialize().then(() => {
 
 function AppContent() {
   const { isAuthenticated, login } = useAuth();
+  useDevAuthUpdater();
 
   if (!isAuthenticated) {
     return (
@@ -40,6 +43,7 @@ function AppContent() {
 
   return (
     <MenuProvider>
+      <DevAuthBanner />
       <div className="app">
         <Sidebar />
         <div className="main-content">

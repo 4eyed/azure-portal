@@ -8,6 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_POWERBI_WORKSPACE_ID: string;
   readonly VITE_POWERBI_REPORT_ID: string;
   readonly VITE_POWERBI_EMBED_URL: string;
+  readonly VITE_ENABLE_DEV_PRINCIPAL?: string;
 }
 
 interface ImportMeta {

@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useMsal } from '@azure/msal-react';
 import { apiGet } from '../services/apiClient';
 
 export function useAdminMode() {
-  const { instance } = useMsal();
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [canBeAdmin, setCanBeAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -13,7 +11,7 @@ export function useAdminMode() {
     // Check if user has admin permissions on mount
     const checkAdminStatus = async () => {
       try {
-        const response = await apiGet(instance, '/auth/check-admin');
+        const response = await apiGet('/auth/check-admin');
 
         if (response.ok) {
           const data = await response.json();
@@ -50,7 +48,7 @@ export function useAdminMode() {
     };
 
     checkAdminStatus();
-  }, [instance]);
+  }, []);
 
   const toggleAdminMode = () => {
     if (canBeAdmin) {

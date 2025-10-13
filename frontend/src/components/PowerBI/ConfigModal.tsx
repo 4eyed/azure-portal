@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Select, MenuItem, FormControl, InputLabel, Checkbox, FormControlLabel } from '@mui/material';
 import { powerBIClient } from '../../services/powerbi/client';
-import { useAuth } from '../../auth/useAuth';
 import './ConfigModal.css';
 
 interface Workspace {
@@ -32,7 +31,6 @@ export interface PowerBIConfigData {
 }
 
 export function ConfigModal({ open, onClose, onSave }: ConfigModalProps) {
-  const { getPowerBIToken, user } = useAuth();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(false);
@@ -63,11 +61,6 @@ export function ConfigModal({ open, onClose, onSave }: ConfigModalProps) {
     setLoading(true);
     setError(null);
     try {
-      console.log('Acquiring Power BI token...');
-      const token = await getPowerBIToken();
-      console.log('Power BI token acquired, length:', token?.length);
-      console.log('Token preview:', token?.substring(0, 50) + '...');
-
       // Check if mock mode is enabled via environment variable
       if (import.meta.env.VITE_POWERBI_MOCK_MODE === 'true') {
         console.log('Using mock Power BI data');
@@ -79,7 +72,7 @@ export function ConfigModal({ open, onClose, onSave }: ConfigModalProps) {
         return;
       }
 
-      const data = await powerBIClient.getWorkspaces(token);
+      const data = await powerBIClient.getWorkspaces();
       setWorkspaces(data);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load workspaces';
@@ -105,8 +98,7 @@ export function ConfigModal({ open, onClose, onSave }: ConfigModalProps) {
         return;
       }
 
-      const token = await getPowerBIToken();
-      const data = await powerBIClient.getReports(workspaceId, token);
+      const data = await powerBIClient.getReports(workspaceId);
       setReports(data);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load reports';

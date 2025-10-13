@@ -43,39 +43,9 @@ public class GetPowerBIWorkspaces
                 });
             }
 
-            _logger.LogInformation("Fetching Power BI workspaces");
+            _logger.LogInformation("Fetching Power BI workspaces using managed identity credential");
 
-            // Extract the user's access token from the Authorization header
-            var authHeader = req.Headers["Authorization"].ToString();
-            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
-            {
-                return new UnauthorizedObjectResult(new ErrorResponse
-                {
-                    Error = "Authorization header is required"
-                });
-            }
-
-            var userToken = authHeader.Substring("Bearer ".Length).Trim();
-
-            // Log token info for debugging (first 20 chars only)
-            _logger.LogInformation("Token received, length: {TokenLength}, preview: {TokenPreview}...",
-                userToken.Length,
-                userToken.Substring(0, Math.Min(20, userToken.Length)));
-
-            // Try to decode and log audience/scope
-            try
-            {
-                var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
-                var token = handler.ReadJwtToken(userToken);
-                _logger.LogInformation("Token audience: {Audience}", token.Audiences.FirstOrDefault());
-                _logger.LogInformation("Token scopes: {Scopes}", token.Claims.FirstOrDefault(c => c.Type == "scp")?.Value);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Could not decode token");
-            }
-
-            var workspaces = await _powerBIService.GetWorkspaces(userToken);
+            var workspaces = await _powerBIService.GetWorkspacesAsync();
 
             return new OkObjectResult(workspaces);
         }

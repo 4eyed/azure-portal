@@ -1,4 +1,3 @@
-import { PublicClientApplication } from '@azure/msal-browser';
 import { apiGet, apiPost, apiPut, apiDelete } from '../apiClient';
 
 // Debug logging
@@ -10,7 +9,6 @@ console.groupEnd();
 
 // Helper to add query params only in dev mode
 function buildPath(path: string, userId?: string): string {
-  // In local dev, pass userId as query param. In production, Azure Static Web Apps handles auth.
   if (import.meta.env.DEV && userId) {
     return `${path}?user=${encodeURIComponent(userId)}`;
   }
@@ -50,8 +48,16 @@ export interface MenuGroupData {
 }
 
 export const menuClient = {
-  async createMenuItem(msalInstance: PublicClientApplication, data: MenuItemData, userId: string) {
-    const response = await apiPost(msalInstance, buildPath('/menu-items', userId), data);
+  async fetchMenuStructure(userId: string) {
+    const response = await apiGet(buildPath('/menu-structure', userId));
+    if (!response.ok) {
+      throw new Error(`Failed to fetch menu: ${response.statusText}`);
+    }
+    return response.json();
+  },
+
+  async createMenuItem(data: MenuItemData, userId: string) {
+    const response = await apiPost(buildPath('/menu-items', userId), data);
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: response.statusText }));
@@ -61,8 +67,8 @@ export const menuClient = {
     return response.json();
   },
 
-  async updateMenuItem(msalInstance: PublicClientApplication, id: number, data: MenuItemData, userId: string) {
-    const response = await apiPut(msalInstance, buildPath(`/menu-items/${id}`, userId), data);
+  async updateMenuItem(id: number, data: MenuItemData, userId: string) {
+    const response = await apiPut(buildPath(`/menu-items/${id}`, userId), data);
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: response.statusText }));
@@ -72,8 +78,8 @@ export const menuClient = {
     return response.json();
   },
 
-  async deleteMenuItem(msalInstance: PublicClientApplication, id: number, userId: string) {
-    const response = await apiDelete(msalInstance, buildPath(`/menu-items/${id}`, userId));
+  async deleteMenuItem(id: number, userId: string) {
+    const response = await apiDelete(buildPath(`/menu-items/${id}`, userId));
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: response.statusText }));
@@ -83,13 +89,13 @@ export const menuClient = {
     return response.ok;
   },
 
-  async toggleMenuItemVisibility(msalInstance: PublicClientApplication, id: number, item: MenuItemData, userId: string) {
+  async toggleMenuItemVisibility(id: number, item: MenuItemData, userId: string) {
     const updated = { ...item, isVisible: !item.isVisible };
-    return this.updateMenuItem(msalInstance, id, updated, userId);
+    return this.updateMenuItem(id, updated, userId);
   },
 
-  async createMenuGroup(msalInstance: PublicClientApplication, data: MenuGroupData, userId: string) {
-    const response = await apiPost(msalInstance, buildPath('/menu-groups', userId), data);
+  async createMenuGroup(data: MenuGroupData, userId: string) {
+    const response = await apiPost(buildPath('/menu-groups', userId), data);
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: response.statusText }));
@@ -99,8 +105,8 @@ export const menuClient = {
     return response.json();
   },
 
-  async updateMenuGroup(msalInstance: PublicClientApplication, id: number, data: MenuGroupData, userId: string) {
-    const response = await apiPut(msalInstance, buildPath(`/menu-groups/${id}`, userId), data);
+  async updateMenuGroup(id: number, data: MenuGroupData, userId: string) {
+    const response = await apiPut(buildPath(`/menu-groups/${id}`, userId), data);
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: response.statusText }));
@@ -110,8 +116,8 @@ export const menuClient = {
     return response.json();
   },
 
-  async toggleMenuGroupVisibility(msalInstance: PublicClientApplication, id: number, group: MenuGroupData, userId: string) {
+  async toggleMenuGroupVisibility(id: number, group: MenuGroupData, userId: string) {
     const updated = { ...group, isVisible: !group.isVisible };
-    return this.updateMenuGroup(msalInstance, id, updated, userId);
+    return this.updateMenuGroup(id, updated, userId);
   },
 };

@@ -4,7 +4,6 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using MenuApi.Services;
 using MenuApi.Extensions;
-using MenuApi.Infrastructure;
 
 namespace MenuApi.Functions;
 
@@ -16,18 +15,15 @@ public class CheckAdmin
     private readonly ILogger<CheckAdmin> _logger;
     private readonly IAuthorizationService _authService;
     private readonly IClaimsPrincipalParser _claimsParser;
-    private readonly IJwtTokenValidator _jwtValidator;
 
     public CheckAdmin(
         ILogger<CheckAdmin> logger,
         IAuthorizationService authService,
-        IClaimsPrincipalParser claimsParser,
-        IJwtTokenValidator jwtValidator)
+        IClaimsPrincipalParser claimsParser)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _authService = authService ?? throw new ArgumentNullException(nameof(authService));
         _claimsParser = claimsParser ?? throw new ArgumentNullException(nameof(claimsParser));
-        _jwtValidator = jwtValidator ?? throw new ArgumentNullException(nameof(jwtValidator));
     }
 
     [Function("CheckAdmin")]
@@ -36,28 +32,6 @@ public class CheckAdmin
     {
         try
         {
-            // Extract SQL token from request header and store in AsyncLocal context
-            req.ExtractAndStoreSqlToken(_logger);
-
-            // Manually validate JWT token and populate HttpContext.User
-            var principal = await _jwtValidator.ValidateTokenAsync(req);
-            if (principal != null && req.HttpContext != null)
-            {
-                req.HttpContext.User = principal;
-                _logger.LogInformation("Token validated, user populated in HttpContext");
-            }
-
-            // Debug: Log authentication state
-            _logger.LogInformation("CheckAdmin called - IsAuthenticated: {IsAuth}, HasUser: {HasUser}",
-                req.HttpContext?.User?.Identity?.IsAuthenticated ?? false,
-                req.HttpContext?.User != null);
-
-            if (req.HttpContext?.User != null)
-            {
-                var claims = req.HttpContext.User.Claims.Select(c => $"{c.Type}={c.Value}").Take(10).ToList();
-                _logger.LogInformation("Claims found: {Claims}", string.Join(", ", claims));
-            }
-
             // Extract authenticated user ID (Entra OID)
             var userId = req.GetAuthenticatedUserId(_claimsParser);
 

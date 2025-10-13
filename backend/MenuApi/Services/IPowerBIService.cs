@@ -8,17 +8,17 @@ namespace MenuApi.Services;
 public interface IPowerBIService
 {
     /// <summary>
-    /// Gets all Power BI workspaces using the user's access token
+    /// Gets all Power BI workspaces using the application's credential
     /// </summary>
-    Task<List<PowerBIWorkspaceResponse>> GetWorkspaces(string userAccessToken);
+    Task<List<PowerBIWorkspaceResponse>> GetWorkspacesAsync();
 
     /// <summary>
-    /// Gets all reports in a workspace using the user's access token
+    /// Gets all reports in a workspace using the application's credential
     /// </summary>
-    Task<List<PowerBIReportResponse>> GetReports(string workspaceId, string userAccessToken);
+    Task<List<PowerBIReportResponse>> GetReportsAsync(string workspaceId);
 
     /// <summary>
-    /// Generates an embed token for a report using the user's access token
+    /// Generates an embed token for a report using the application's credential
     /// </summary>
-    Task<EmbedTokenResponse> GenerateEmbedToken(string workspaceId, string reportId, string userAccessToken);
+    Task<EmbedTokenResponse> GenerateEmbedTokenAsync(string workspaceId, string reportId);
 }

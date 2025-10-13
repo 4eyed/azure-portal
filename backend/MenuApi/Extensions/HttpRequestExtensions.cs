@@ -1,6 +1,5 @@
+using System;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using MenuApi.Infrastructure;
 using MenuApi.Services;
 
 namespace MenuApi.Extensions;
@@ -52,26 +51,4 @@ public static class HttpRequestExtensions
                (isAdminQuery.Equals("true", StringComparison.OrdinalIgnoreCase) || isAdminQuery == "1");
     }
 
-    /// <summary>
-    /// Extracts the SQL access token from the X-SQL-Token header and stores it in SqlTokenContext
-    /// This must be called at the beginning of every function that accesses the database
-    /// </summary>
-    public static void ExtractAndStoreSqlToken(this HttpRequest req, ILogger logger)
-    {
-        if (req.Headers.TryGetValue("X-SQL-Token", out var sqlToken))
-        {
-            var token = sqlToken.ToString();
-            SqlTokenContext.SqlToken = token;
-            logger.LogInformation(
-                "✅ SQL token extracted from X-SQL-Token header (length: {Length}, prefix: {Prefix}...)",
-                token.Length,
-                token.Substring(0, Math.Min(20, token.Length))
-            );
-        }
-        else
-        {
-            // In production (Azure), no X-SQL-Token is expected - Managed Identity is used
-            logger.LogDebug("No X-SQL-Token header (expected in Azure - using Managed Identity)");
-        }
-    }
 }

@@ -1,3 +1,4 @@
+using System.IO;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -44,18 +45,6 @@ public class GenerateEmbedToken
                 });
             }
 
-            // Extract the user's access token from the Authorization header
-            var authHeader = req.Headers["Authorization"].ToString();
-            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
-            {
-                return new UnauthorizedObjectResult(new ErrorResponse
-                {
-                    Error = "Authorization header is required"
-                });
-            }
-
-            var userToken = authHeader.Substring("Bearer ".Length).Trim();
-
             var body = await new StreamReader(req.Body).ReadToEndAsync();
             var request = JsonSerializer.Deserialize<EmbedTokenRequest>(body, new JsonSerializerOptions
             {
@@ -73,7 +62,7 @@ public class GenerateEmbedToken
             _logger.LogInformation("Generating embed token for workspace: {WorkspaceId}, report: {ReportId}",
                 request.WorkspaceId, request.ReportId);
 
-            var result = await _powerBIService.GenerateEmbedToken(request.WorkspaceId, request.ReportId, userToken);
+            var result = await _powerBIService.GenerateEmbedTokenAsync(request.WorkspaceId, request.ReportId);
 
             return new OkObjectResult(result);
         }
