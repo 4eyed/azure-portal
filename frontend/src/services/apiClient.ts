@@ -1,6 +1,6 @@
 import { InteractionRequiredAuthError } from '@azure/msal-browser';
 import { msalInstance } from '../auth/msalInstance';
-import { loginRequest, sqlRequest } from '../auth/config';
+import { sqlRequest } from '../auth/config';
 import { devAuthIsEnabled, getDevAuthHeader } from '../auth/devAuthStore';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
@@ -35,7 +35,6 @@ async function request(path: string, init?: RequestInit): Promise<Response> {
     }
   }
 
-  await attachUserAccessToken(headers);
   await attachSqlAccessToken(headers);
 
   const requestInit: RequestInit = {
@@ -78,35 +77,6 @@ async function attachSqlAccessToken(headers: Headers): Promise<void> {
       }
     } else {
       console.error('Failed to acquire SQL delegated token silently; falling back to backend identity.', error);
-    }
-  }
-}
-
-async function attachUserAccessToken(headers: Headers): Promise<void> {
-  const accounts = msalInstance.getAllAccounts();
-  if (accounts.length === 0) {
-    console.warn('No authenticated MSAL account available; skipping Authorization header.');
-    return;
-  }
-
-  const request = { ...loginRequest, account: accounts[0] };
-
-  try {
-    const response = await msalInstance.acquireTokenSilent(request);
-    headers.set('Authorization', `Bearer ${response.accessToken}`);
-    console.debug('Attached bearer token for API requests.');
-  } catch (error) {
-    if (error instanceof InteractionRequiredAuthError) {
-      console.warn('API token requires interactive consent; prompting user via popup.');
-      try {
-        const response = await msalInstance.acquireTokenPopup(request);
-        headers.set('Authorization', `Bearer ${response.accessToken}`);
-        console.debug('Attached bearer token for API requests after popup consent.');
-      } catch (popupError) {
-        console.error('User cancelled or popup acquisition failed; proceeding without Authorization header.', popupError);
-      }
-    } else {
-      console.error('Failed to acquire bearer token silently; proceeding without Authorization header.', error);
     }
   }
 }
