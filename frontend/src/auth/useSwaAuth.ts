@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getDevAuthState, devAuthIsEnabled } from './devAuthStore';
+import { getDevAuthState, devAuthIsEnabled, subscribeDevAuth } from './devAuthStore';
 
 interface SwaUser {
   userId: string;
@@ -26,31 +26,54 @@ export function useSwaAuth(): UseSwaAuthReturn {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      // Local development: Use devAuthStore to simulate SWA auth
-      if (import.meta.env.DEV && devAuthIsEnabled()) {
-        console.log('🔐 useSwaAuth: Using devAuthStore for local development');
-        const devState = getDevAuthState();
+    // Local development: Subscribe to devAuthStore changes
+    if (import.meta.env.DEV && devAuthIsEnabled()) {
+      console.log('🔐 useSwaAuth: Using devAuthStore for local development');
 
-        if (devState.userId) {
+      // Initial check
+      const devState = getDevAuthState();
+      if (devState.userId) {
+        setIsAuthenticated(true);
+        setUserInfo({
+          userId: devState.userId,
+          userDetails: devState.displayName || devState.userId,
+          userRoles: devState.roles
+        });
+        console.log('✅ Local dev authenticated:', devState.userId);
+        setLoading(false);
+      } else {
+        console.log('⏳ Local dev: Waiting for MSAL authentication...');
+        setIsAuthenticated(false);
+        setUserInfo(null);
+        // Keep loading true until MSAL authenticates
+      }
+
+      // Subscribe to devAuthStore changes
+      const unsubscribe = subscribeDevAuth(() => {
+        const updatedState = getDevAuthState();
+        console.log('🔄 devAuthStore updated:', updatedState.userId ? '✅ Authenticated' : '❌ Not authenticated');
+
+        if (updatedState.userId) {
           setIsAuthenticated(true);
           setUserInfo({
-            userId: devState.userId,
-            userDetails: devState.displayName || devState.userId,
-            userRoles: devState.roles
+            userId: updatedState.userId,
+            userDetails: updatedState.displayName || updatedState.userId,
+            userRoles: updatedState.roles
           });
-          console.log('✅ Local dev authenticated:', devState.userId);
+          console.log('✅ Local dev authenticated via subscription:', updatedState.userId);
+          setLoading(false);
         } else {
           setIsAuthenticated(false);
           setUserInfo(null);
-          console.warn('⚠️ Local dev: No user in devAuthStore');
+          setLoading(false);
         }
+      });
 
-        setLoading(false);
-        return;
-      }
+      return unsubscribe;
+    }
 
-      // Production: Check SWA authentication via /.auth/me
+    // Production: Check SWA authentication via /.auth/me
+    const checkAuth = async () => {
       try {
         console.log('🔐 useSwaAuth: Checking SWA authentication via /.auth/me');
         const response = await fetch('/.auth/me', {
