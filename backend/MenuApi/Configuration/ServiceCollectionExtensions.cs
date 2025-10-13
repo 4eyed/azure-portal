@@ -54,15 +54,30 @@ public static class ServiceCollectionExtensions
                 throw new InvalidOperationException("A SQL connection string was not provided. Set DOTNET_CONNECTION_STRING or ConnectionStrings:DefaultConnection in app settings.");
             }
 
+            // Check if running in Azure
+            var isAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
+
             var sanitized = string.Join(";", connectionString
                 .Split(';', StringSplitOptions.RemoveEmptyEntries)
                 .Where(part => !part.StartsWith("Password", StringComparison.OrdinalIgnoreCase) &&
                                !part.StartsWith("Pwd", StringComparison.OrdinalIgnoreCase)));
 
-            logger.LogInformation("Configuring SQL Server DbContext with managed identity connection string: {ConnectionString}", sanitized);
+            logger.LogInformation("Configuring SQL Server DbContext (Environment: {Environment}, ConnectionString: {ConnectionString})",
+                isAzure ? "Azure" : "Local Dev", sanitized);
 
             options.UseSqlServer(connectionString);
-            options.AddInterceptors(interceptor);
+
+            // Only add SQL token interceptor in LOCAL DEV mode
+            // In Azure, Managed Identity is used via connection string (no interceptor needed)
+            if (!isAzure)
+            {
+                logger.LogInformation("Registering SqlTokenInterceptor for local dev (user SQL tokens)");
+                options.AddInterceptors(interceptor);
+            }
+            else
+            {
+                logger.LogInformation("Using Managed Identity authentication (no interceptor)");
+            }
         }, ServiceLifetime.Scoped);
 
         // Expose DefaultAzureCredential so managed identity can be reused (Power BI, etc.)

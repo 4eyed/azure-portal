@@ -16,6 +16,20 @@
       "/*.{js,css,png,jpg,gif,svg,ico,json,txt}"
     ]
   },
+  "auth": {
+    "identityProviders": {
+      "azureActiveDirectory": {
+        "registration": {
+          "openIdIssuer": "https://login.microsoftonline.com/ae372c45-2e81-4d1c-9490-e9ac10250047/v2.0",
+          "clientIdSettingName": "AZURE_CLIENT_ID",
+          "clientSecretSettingName": "AZURE_CLIENT_SECRET"
+        },
+        "login": {
+          "loginParameters": ["scope=openid profile email offline_access"]
+        }
+      }
+    }
+  },
   "responseOverrides": {
     "401": { "redirect": "/.auth/login/aad", "statusCode": 302 }
   },
