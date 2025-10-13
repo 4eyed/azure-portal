@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { MsalProvider as BaseMsalProvider } from '@azure/msal-react';
+import { MsalProvider as BaseMsalProvider, useMsal } from '@azure/msal-react';
 import { msalInstance } from './auth/msalInstance';
 import { useSwaAuth } from './auth/useSwaAuth';
+import { loginRequest } from './auth/config';
 import { MenuProvider } from './contexts/MenuContext';
 import { Sidebar } from './components/Layout/Sidebar';
 import { Header } from './components/Layout/Header';
@@ -22,6 +23,7 @@ msalInstance.initialize().then(() => {
 
 function AppContent() {
   const { isAuthenticated, userInfo, loading } = useSwaAuth();
+  const { instance } = useMsal();
   useDevAuthUpdater();
 
   useEffect(() => {
@@ -47,13 +49,33 @@ function AppContent() {
 
   // In local dev, show login prompt if not authenticated
   if (!isAuthenticated && import.meta.env.DEV) {
+    const handleLogin = () => {
+      console.log('🔐 Starting MSAL login redirect...');
+      instance.loginRedirect(loginRequest);
+    };
+
     return (
       <div className="login-page">
         <div className="login-box">
           <h1>JA Portal - Local Dev</h1>
-          <p>Please configure devAuthStore for local development</p>
-          <p style={{ fontSize: '0.9em', color: '#666' }}>
-            Open browser console and see instructions for setting up local authentication
+          <p>Please sign in with your Azure AD account</p>
+          <button
+            onClick={handleLogin}
+            style={{
+              marginTop: '20px',
+              padding: '10px 20px',
+              fontSize: '16px',
+              backgroundColor: '#0078d4',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Sign in with Microsoft
+          </button>
+          <p style={{ fontSize: '0.9em', color: '#666', marginTop: '20px' }}>
+            You will be redirected to Microsoft login
           </p>
         </div>
       </div>
