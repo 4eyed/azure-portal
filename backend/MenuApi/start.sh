@@ -14,6 +14,103 @@ echo "  OPENFGA_DATASTORE_URI: ${OPENFGA_DATASTORE_URI:0:50}... (truncated)"
 echo "  WEBSITES_PORT: ${WEBSITES_PORT:-not set}"
 echo ""
 
+echo "🔍 ================================================"
+echo "🔍 DETAILED CONNECTION STRING ANALYSIS"
+echo "🔍 ================================================"
+echo ""
+
+# Analyze DOTNET_CONNECTION_STRING
+echo "📊 DOTNET_CONNECTION_STRING Analysis:"
+if [ -n "$DOTNET_CONNECTION_STRING" ]; then
+    echo "  ✅ Variable EXISTS"
+    echo "  📏 Length: ${#DOTNET_CONNECTION_STRING} characters"
+
+    # Check for Authentication parameter
+    if echo "$DOTNET_CONNECTION_STRING" | grep -qi "Authentication="; then
+        AUTH_VALUE=$(echo "$DOTNET_CONNECTION_STRING" | grep -oiE "Authentication=[^;]+" | head -1)
+        echo "  ✅ Contains 'Authentication': YES"
+        echo "     Value: ${AUTH_VALUE}"
+    else
+        echo "  ❌ Contains 'Authentication': NO"
+        echo "     ⚠️  WARNING: Managed Identity requires 'Authentication=Active Directory Default'"
+    fi
+
+    # Extract key properties
+    if echo "$DOTNET_CONNECTION_STRING" | grep -qi "Server="; then
+        SERVER=$(echo "$DOTNET_CONNECTION_STRING" | grep -oiE "Server=[^;]+" | head -1 | cut -d= -f2)
+        echo "  🖥️  Server: ${SERVER}"
+    fi
+
+    if echo "$DOTNET_CONNECTION_STRING" | grep -qi "Database="; then
+        DATABASE=$(echo "$DOTNET_CONNECTION_STRING" | grep -oiE "Database=[^;]+" | head -1 | cut -d= -f2)
+        echo "  🗄️  Database: ${DATABASE}"
+    fi
+
+    # Check for password (should NOT be present with Managed Identity)
+    if echo "$DOTNET_CONNECTION_STRING" | grep -qiE "(Password=|Pwd=)"; then
+        echo "  🔑 Has Password: YES (SQL Auth mode)"
+    else
+        echo "  🔐 Has Password: NO (Passwordless mode)"
+    fi
+
+    echo "  📋 Full value (sanitized):"
+    # Sanitize: hide passwords if present
+    SANITIZED=$(echo "$DOTNET_CONNECTION_STRING" | sed -E 's/(Password|Pwd)=[^;]+/\1=***REDACTED***/gi')
+    echo "     ${SANITIZED}"
+else
+    echo "  ❌ Variable NOT SET"
+    echo "     ⚠️  ERROR: DOTNET_CONNECTION_STRING is required!"
+fi
+echo ""
+
+# Analyze OPENFGA_DATASTORE_URI
+echo "📊 OPENFGA_DATASTORE_URI Analysis:"
+if [ -n "$OPENFGA_DATASTORE_URI" ]; then
+    echo "  ✅ Variable EXISTS"
+    echo "  📏 Length: ${#OPENFGA_DATASTORE_URI} characters"
+
+    # Check for fedauth parameter
+    if echo "$OPENFGA_DATASTORE_URI" | grep -qi "fedauth="; then
+        FEDAUTH_VALUE=$(echo "$OPENFGA_DATASTORE_URI" | grep -oiE "fedauth=[^&;]+" | head -1)
+        echo "  ✅ Contains 'fedauth': YES"
+        echo "     Value: ${FEDAUTH_VALUE}"
+    else
+        echo "  ❌ Contains 'fedauth': NO"
+        echo "     ⚠️  WARNING: Managed Identity requires 'fedauth=ActiveDirectoryMSI'"
+    fi
+
+    # Extract server
+    if echo "$OPENFGA_DATASTORE_URI" | grep -qE "sqlserver://"; then
+        SERVER=$(echo "$OPENFGA_DATASTORE_URI" | sed -nE 's|.*sqlserver://([^:/]+).*|\1|p')
+        echo "  🖥️  Server: ${SERVER}"
+    fi
+
+    # Extract database
+    if echo "$OPENFGA_DATASTORE_URI" | grep -qE "database="; then
+        DATABASE=$(echo "$OPENFGA_DATASTORE_URI" | grep -oiE "database=[^&;]+" | head -1 | cut -d= -f2)
+        echo "  🗄️  Database: ${DATABASE}"
+    fi
+
+    # Check for password in URI
+    if echo "$OPENFGA_DATASTORE_URI" | grep -qE ":[^:@]+@"; then
+        echo "  🔑 Has Password: YES (SQL Auth mode)"
+    else
+        echo "  🔐 Has Password: NO (Passwordless mode)"
+    fi
+
+    echo "  📋 Full value (sanitized):"
+    # Sanitize: hide username:password if present
+    SANITIZED=$(echo "$OPENFGA_DATASTORE_URI" | sed -E 's|://[^:]+:[^@]+@|://***:***@|g')
+    echo "     ${SANITIZED}"
+else
+    echo "  ❌ Variable NOT SET"
+    echo "     ⚠️  ERROR: OPENFGA_DATASTORE_URI is required!"
+fi
+echo ""
+
+echo "🔍 ================================================"
+echo ""
+
 # Check if connection string uses Managed Identity
 if [[ "$OPENFGA_DATASTORE_URI" == *"fedauth=ActiveDirectoryMSI"* ]] || \
    [[ "$OPENFGA_DATASTORE_URI" == *"fedauth=ActiveDirectoryManagedIdentity"* ]] || \

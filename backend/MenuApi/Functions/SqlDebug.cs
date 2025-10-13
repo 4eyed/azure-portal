@@ -52,7 +52,95 @@ public class SqlDebug
         results.AppendLine($"Site Name: {siteName}");
         results.AppendLine();
 
-        // Get connection string
+        // RAW Environment Variables Section
+        results.AppendLine("========================================");
+        results.AppendLine("RAW ENVIRONMENT VARIABLES (from IConfiguration)");
+        results.AppendLine("========================================");
+        results.AppendLine();
+
+        // Show DOTNET_CONNECTION_STRING from environment
+        var rawDotnetConnStr = _configuration["DOTNET_CONNECTION_STRING"];
+        results.AppendLine("DOTNET_CONNECTION_STRING:");
+        if (!string.IsNullOrEmpty(rawDotnetConnStr))
+        {
+            results.AppendLine($"  Status: ✅ SET");
+            results.AppendLine($"  Length: {rawDotnetConnStr.Length} characters");
+            results.AppendLine($"  Sanitized: {SanitizeConnectionString(rawDotnetConnStr)}");
+
+            // Parse key properties
+            try
+            {
+                var builder = new SqlConnectionStringBuilder(rawDotnetConnStr);
+                results.AppendLine($"  Server: {builder.DataSource}");
+                results.AppendLine($"  Database: {builder.InitialCatalog}");
+
+                if (builder.TryGetValue("Authentication", out var auth))
+                {
+                    results.AppendLine($"  Authentication: {auth} ✅");
+                }
+                else
+                {
+                    results.AppendLine($"  Authentication: [NOT SET] ❌");
+                }
+
+                results.AppendLine($"  Has Password: {(!string.IsNullOrEmpty(builder.Password) ? "YES" : "NO")}");
+                results.AppendLine($"  Encrypt: {builder.Encrypt}");
+            }
+            catch (Exception ex)
+            {
+                results.AppendLine($"  ❌ Failed to parse: {ex.Message}");
+            }
+        }
+        else
+        {
+            results.AppendLine($"  Status: ❌ NOT SET");
+        }
+        results.AppendLine();
+
+        // Show OPENFGA_DATASTORE_URI from environment
+        var rawOpenFgaUri = _configuration["OPENFGA_DATASTORE_URI"];
+        results.AppendLine("OPENFGA_DATASTORE_URI:");
+        if (!string.IsNullOrEmpty(rawOpenFgaUri))
+        {
+            results.AppendLine($"  Status: ✅ SET");
+            results.AppendLine($"  Length: {rawOpenFgaUri.Length} characters");
+
+            // Sanitize credentials
+            var sanitized = System.Text.RegularExpressions.Regex.Replace(
+                rawOpenFgaUri,
+                @"://[^:]+:[^@]+@",
+                "://***:***@"
+            );
+            results.AppendLine($"  Sanitized: {sanitized}");
+
+            // Check for fedauth
+            if (rawOpenFgaUri.Contains("fedauth=", StringComparison.OrdinalIgnoreCase))
+            {
+                var fedauthMatch = System.Text.RegularExpressions.Regex.Match(
+                    rawOpenFgaUri,
+                    @"fedauth=([^&;]+)",
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase
+                );
+                if (fedauthMatch.Success)
+                {
+                    results.AppendLine($"  fedauth: {fedauthMatch.Groups[1].Value} ✅");
+                }
+            }
+            else
+            {
+                results.AppendLine($"  fedauth: [NOT SET] ❌");
+            }
+        }
+        else
+        {
+            results.AppendLine($"  Status: ❌ NOT SET");
+        }
+        results.AppendLine();
+
+        results.AppendLine("========================================");
+        results.AppendLine();
+
+        // Get connection string for testing
         var connectionString = _configuration["DOTNET_CONNECTION_STRING"]
             ?? _configuration.GetConnectionString("DefaultConnection");
 
@@ -61,14 +149,6 @@ public class SqlDebug
             results.AppendLine("❌ ERROR: No connection string found!");
             return CreateResponse(results.ToString(), false);
         }
-
-        // Display sanitized connection string
-        results.AppendLine("Connection String Analysis:");
-        results.AppendLine($"  {SanitizeConnectionString(connectionString)}");
-        results.AppendLine($"  Length: {connectionString.Length} chars");
-        results.AppendLine($"  Has Password: {connectionString.Contains("Password", StringComparison.OrdinalIgnoreCase)}");
-        results.AppendLine($"  Has Authentication: {connectionString.Contains("Authentication", StringComparison.OrdinalIgnoreCase)}");
-        results.AppendLine();
 
         // Test 1: Managed Identity (Azure production default)
         results.AppendLine("========================================");
