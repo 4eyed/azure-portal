@@ -99,15 +99,24 @@ public class ClaimsPrincipalParser : IClaimsPrincipalParser
         var jwtClaims = ParseJwtToken(request);
         if (jwtClaims != null)
         {
+            Console.WriteLine($"🔍 JWT Claims found: {jwtClaims.Count}");
+            Console.WriteLine($"🔍 Available claim types: {string.Join(", ", jwtClaims.Select(c => c.Type).Distinct())}");
+
             var roles = jwtClaims
                 .Where(c => c.Type == "roles" || c.Type == ClaimTypes.Role)
                 .Select(c => c.Value)
                 .ToArray();
 
+            Console.WriteLine($"🎭 Roles extracted from JWT: {(roles.Length > 0 ? string.Join(", ", roles) : "NONE")}");
+
             if (roles.Length > 0)
             {
                 return roles;
             }
+        }
+        else
+        {
+            Console.WriteLine("⚠️ No JWT claims parsed from X-MS-AUTH-TOKEN header");
         }
 
         // Priority 2: Check JWT claims (local dev with Authorization Bearer token)

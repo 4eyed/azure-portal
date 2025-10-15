@@ -25,8 +25,13 @@
           "clientSecretSettingName": "AZURE_CLIENT_SECRET"
         },
         "login": {
-          "loginParameters": ["scope=openid profile email offline_access"]
-        }
+          "loginParameters": [
+            "scope=openid profile email offline_access",
+            "response_type=id_token",
+            "prompt=consent"
+          ]
+        },
+        "userDetailsClaim": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
       }
     }
   },

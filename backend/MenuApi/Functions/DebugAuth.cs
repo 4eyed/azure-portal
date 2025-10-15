@@ -102,6 +102,18 @@ public class DebugAuth
             report.AppendLine("❌ X-MS-CLIENT-PRINCIPAL: Missing");
         }
 
+        // X-MS-AUTH-TOKEN (Azure Static Web Apps linked backend)
+        if (req.Headers.TryGetValue("X-MS-AUTH-TOKEN", out var authToken))
+        {
+            report.AppendLine("✅ X-MS-AUTH-TOKEN: Present");
+            report.AppendLine($"   Length: {authToken.ToString().Length} characters");
+            report.AppendLine($"   Preview: {CreatePreview(authToken.ToString(), 50)}");
+        }
+        else
+        {
+            report.AppendLine("❌ X-MS-AUTH-TOKEN: Missing");
+        }
+
         // X-MS-TOKEN-AAD-ID-TOKEN (Azure Static Web Apps with AAD)
         if (req.Headers.TryGetValue("X-MS-TOKEN-AAD-ID-TOKEN", out var aadIdToken))
         {
