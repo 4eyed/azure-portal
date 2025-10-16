@@ -30,8 +30,7 @@
             "response_type=id_token",
             "prompt=consent"
           ]
-        },
-        "userDetailsClaim": "email"
+        }
       }
     }
   },
