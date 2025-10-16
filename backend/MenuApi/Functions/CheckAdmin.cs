@@ -47,13 +47,25 @@ public class CheckAdmin
 
             _logger.LogInformation("Checking admin status for user: {UserId}", userId);
 
+            // Get roles for debugging
+            var roles = _claimsParser.GetUserRoles(req);
+            var hasAdminRole = req.IsAdmin(_claimsParser);
+            var isAdminInOpenFGA = await _authService.IsAdmin(userId);
+
             // Check if user is admin via OpenFGA or app roles
-            var isAdmin = req.IsAdmin(_claimsParser) || await _authService.IsAdmin(userId);
+            var isAdmin = hasAdminRole || isAdminInOpenFGA;
 
             return new CorsObjectResult(new
             {
                 isAdmin = isAdmin,
-                userId = userId
+                userId = userId,
+                debug = new
+                {
+                    rolesFromToken = roles,
+                    hasAdminRoleInToken = hasAdminRole,
+                    isAdminInOpenFGA = isAdminInOpenFGA,
+                    finalAdminStatus = isAdmin
+                }
             });
         }
         catch (Exception ex)
