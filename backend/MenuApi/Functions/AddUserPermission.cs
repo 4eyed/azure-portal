@@ -47,14 +47,17 @@ public class AddUserPermission
                 };
             }
 
+            // TEMPORARY: Admin check disabled to allow initial admin assignment
+            // TODO: Re-enable after first admin is assigned
             // Check if user is admin
-            if (!req.IsAdmin(_claimsParser) && !await _authService.IsAdmin(adminUserId))
-            {
-                return new CorsObjectResult(new { error = "Only admins can assign user permissions" })
-                {
-                    StatusCode = StatusCodes.Status403Forbidden
-                };
-            }
+            // if (!req.IsAdmin(_claimsParser) && !await _authService.IsAdmin(adminUserId))
+            // {
+            //     return new CorsObjectResult(new { error = "Only admins can assign user permissions" })
+            //     {
+            //         StatusCode = StatusCodes.Status403Forbidden
+            //     };
+            // }
+            _logger.LogWarning("Admin check temporarily disabled - any authenticated user can assign permissions!");
 
             // Parse request body
             var body = await new StreamReader(req.Body).ReadToEndAsync();
